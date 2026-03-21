@@ -57,7 +57,7 @@ export default function HomePage() {
           <h2 className="text-2xl font-bold mb-2">Join the waitlist</h2>
           <p className="text-gray-400 mb-6">Be first to get API access when we launch.</p>
           {status === "done" ? (
-            <p className="text-[#4ade80] font-semibold"You&apos;re>on the list! 🎉</p>
+            <p className="text-[#4ade80] font-semibold">You&apos;re on the list!</p>
           ) : (
             <form onSubmit={handleWaitlist} className="flex gap-3 max-w-md mx-auto">
               <input
@@ -79,9 +79,4 @@ export default function HomePage() {
           )}
         </div>
       </div>
-      <footer className="text-center text-gray-600 pb-8 text-sm">
-        © 2026 AI Payment Proxy. Built for the agentic era.
-      </footer>
-    </div>
-  );
-}
+      <footer className="text-center text-gray
