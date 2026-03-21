@@ -1,7 +1,7 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { label: "Overview", href: "/dashboard" },
@@ -15,19 +15,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const [checked, setChecked] = useState(false);
+  const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
-    async function checkAuth() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session === null) router.replace("/login");
-    }
-    checkAuth();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setAuthed(true);
+      } else {
+        router.replace("/login");
+      }
+      setChecked(true);
+    });
   }, []);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    router.replace("/login");
+    window.location.href = "/login";
   }
+
+  if (!checked) return (
+    <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center">
+      <p className="text-gray-400">Loading...</p>
+    </div>
+  );
+
+  if (!authed) return null;
 
   return (
     <div className="min-h-screen bg-[#0a0f1e] flex">
@@ -35,10 +48,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <h1 className="text-white font-bold text-lg mb-8">AI Payment Proxy</h1>
         <nav className="space-y-1 flex-1">
           {navItems.map(item => (
-            <a
+            
               key={item.href}
               href={item.href}
-              className={`block px-3 py-2 rounded-lg text-sm transition ${pathname === item.href ? "bg-[#4ade80]/10 text-[#4ade80] font-medium" : "text-gray-400 hover:text-white hover:bg-[#1a2235]"}`}
+              className={`block px-3 py-2 rounded-lg text-sm transition ${
+                pathname === item.href
+                  ? "bg-[#4ade80]/10 text-[#4ade80] font-medium"
+                  : "text-gray-400 hover:text-white hover:bg-[#1a2235]"
+              }`}
             >
               {item.label}
             </a>
