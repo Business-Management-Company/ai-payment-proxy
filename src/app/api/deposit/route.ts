@@ -1,34 +1,13 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createClient } from "@/lib/supabase/server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, amount } = await request.json();
-    const supabase = createClient();
-    const { data: customer } = await supabase
-      .from("customers")
-      .select("*")
-      .eq("id", userId)
-      .single();
-
-    if (!customer) return NextResponse.json({ error: "Customer not found" }, { status: 404 });
-
-    let stripeCustomerId = customer.stripe_customer_id;
-    if (!stripeCustomerId) {
-      const stripeCustomer = await stripe.customers.create({
-        email: customer.email,
-        name: customer.name,
-      });
-      stripeCustomerId = stripeCustomer.id;
-      await supabase.from("customers").update({ stripe_customer_id: stripeCustomerId }).eq("id", userId);
-    }
+    const { userId, email, amount } = await request.json();
 
     const session = await stripe.checkout.sessions.create({
-      customer: stripeCustomerId,
       payment_method_types: ["card"],
       line_items: [{
         price_data: {
@@ -39,8 +18,8 @@ export async function POST(request: NextRequest) {
         quantity: 1,
       }],
       mode: "payment",
-      success_url: process.env.NEXT_PUBLIC_APP_URL + "/dashboard?deposit=success",
-      cancel_url: process.env.NEXT_PUBLIC_APP_URL + "/dashboard?deposit=cancelled",
+      success_url: "https://aipaymentproxy.com/dashboard?deposit=success",
+      cancel_url: "https://aipaymentproxy.com/dashboard?deposit=cancelled",
       metadata: { userId, amount: amount.toString() },
     });
 
