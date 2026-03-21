@@ -19,9 +19,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.replace("/login");
-      }
+      if (session === null) router.replace("/login");
     }
     checkAuth();
   }, []);
@@ -37,14 +35,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <h1 className="text-white font-bold text-lg mb-8">AI Payment Proxy</h1>
         <nav className="space-y-1 flex-1">
           {navItems.map(item => (
-            
+            <a
               key={item.href}
               href={item.href}
-              className={`block px-3 py-2 rounded-lg text-sm transition ${
-                pathname === item.href
-                  ? "bg-[#4ade80]/10 text-[#4ade80] font-medium"
-                  : "text-gray-400 hover:text-white hover:bg-[#1a2235]"
-              }`}
+              className={`block px-3 py-2 rounded-lg text-sm transition ${pathname === item.href ? "bg-[#4ade80]/10 text-[#4ade80] font-medium" : "text-gray-400 hover:text-white hover:bg-[#1a2235]"}`}
             >
               {item.label}
             </a>
