@@ -1,60 +1,41 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function DashboardPage() {
+export default function LoginPage() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) router.push("/login");
-      else setEmail(session.user.email ?? "");
-    });
-  }, []);
-
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    router.push("/login");
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { setError(error.message); setLoading(false); }
+    else { router.push("/dashboard"); }
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] flex">
-      <div className="w-64 bg-[#111827] border-r border-gray-800 p-6">
-        <h1 className="text-white font-bold text-lg mb-8">AI Payment Proxy</h1>
-        <nav className="space-y-2">
-          {["Overview", "Cards", "Transactions", "API Keys", "Settings"].map(item => (
-            <div key={item} className="text-gray-400 hover:text-white px-3 py-2 rounded-lg hover:bg-[#1a2235] cursor-pointer">
-              {item}
-            </div>
-          ))}
-        </nav>
-      </div>
-      <div className="flex-1 p-8">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-white text-2xl font-bold">Overview</h2>
-          <div className="flex items-center gap-4">
-            <span className="text-gray-400 text-sm">{email}</span>
-            <button onClick={handleSignOut} className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 text-sm">
-              Sign Out
-            </button>
-          </div>
-        </div>
-        <div className="grid grid-cols-4 gap-4">
-          {[
-            { label: "Cards Created", value: "0" },
-            { label: "Active Cards", value: "0" },
-            { label: "Total Spend", value: "$0" },
-            { label: "API Calls", value: "0" },
-          ].map(stat => (
-            <div key={stat.label} className="bg-[#111827] border border-gray-800 rounded-xl p-6">
-              <p className="text-gray-400 text-sm">{stat.label}</p>
-              <p className="text-white text-3xl font-bold mt-2">{stat.value}</p>
-            </div>
-          ))}
-        </div>
+    <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center">
+      <div className="bg-[#111827] border border-gray-800 rounded-xl p-8 w-full max-w-md">
+        <h1 className="text-2xl font-bold text-white mb-2">AI Payment Proxy</h1>
+        <p className="text-gray-400 mb-6">Welcome back</p>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full bg-[#1a2235] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]" />
+          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required className="w-full bg-[#1a2235] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]" />
+          {error && <p className="text-red-400 text-sm">{error}</p>}
+          <button type="submit" disabled={loading} className="w-full bg-[#4ade80] text-black font-semibold rounded-lg px-4 py-3 hover:bg-[#22c55e] transition">
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
+        </form>
+        <p className="text-gray-500 text-sm mt-4 text-center">
+          No account? <a href="/signup" className="text-[#4ade80]">Sign up</a>
+        </p>
       </div>
     </div>
   );
