@@ -79,4 +79,9 @@ export default function HomePage() {
           )}
         </div>
       </div>
-      <footer className="text-center text-gray
+      <footer className="text-center text-gray-600 pb-8 text-sm">
+        &copy; 2026 AI Payment Proxy. Built for the agentic era.
+      </footer>
+    </div>
+  );
+}
