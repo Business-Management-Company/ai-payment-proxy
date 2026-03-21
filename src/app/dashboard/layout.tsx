@@ -25,7 +25,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <h1 className="text-white font-bold text-lg mb-8">AI Payment Proxy</h1>
         <nav className="space-y-1 flex-1">
           {navItems.map(item => (
-            
+            <a
               key={item.href}
               href={item.href}
               className={`block px-3 py-2 rounded-lg text-sm transition ${
