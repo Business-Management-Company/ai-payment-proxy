@@ -19,7 +19,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [ok, setOk] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    setTimeout(() => { supabase.auth.getSession().then(({ data }) => {
       if (data.session) setOk(true);
       else router.replace("/login");
       setReady(true);
