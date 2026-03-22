@@ -5,21 +5,27 @@ import { createClient } from "@/lib/supabase/client";
 
 export default function AuthCallback() {
   const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
-    supabase.auth.onAuthStateChange((event, session) => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         router.push("/dashboard");
       } else {
-        router.push("/login");
+        supabase.auth.onAuthStateChange((event, session) => {
+          if (event === "SIGNED_IN" && session) {
+            router.push("/dashboard");
+          } else {
+            router.push("/login");
+          }
+        });
       }
     });
   }, []);
 
   return (
     <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center">
-      <p className="text-white">Signing you in...</p>
+      <p className="text-white text-lg">Signing you in...</p>
     </div>
   );
 }
