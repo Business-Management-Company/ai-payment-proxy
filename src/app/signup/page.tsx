@@ -341,7 +341,7 @@ By checking the box below you confirm you have read and agree to our Privacy Pol
         </p>
 
         <p className="text-gray-600 text-xs mt-4 text-center">
-          AI Payment Proxy is not a bank. Cards issued by Stripe's banking partners.
+          AI Payment Proxy is not a bank. Cards issued by Stripe&apos;s banking partners.
         </p>
       </div>
     </div>

@@ -7,14 +7,16 @@ export default function Terms() {
 
       <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-8">
         <p className="text-amber-400 text-sm font-semibold mb-1">Important Financial Disclaimer</p>
-        <p className="text-amber-300 text-sm">AI Payment Proxy is not a bank. We are not a licensed money transmitter. Virtual cards are issued by Stripe's banking partners (Evolve Bank & Trust, Member FDIC). Prepaid balances held in your AI Payment Proxy account are not FDIC insured and are not bank deposits.</p>
+        <p className="text-amber-300 text-sm">AI Payment Proxy is not a bank. We are not a licensed money transmitter. Virtual cards are issued by Stripe&apos;s banking partners (Evolve Bank &amp; Trust, Member FDIC). Prepaid balances held in your AI Payment Proxy account are not FDIC insured and are not bank deposits.</p>
       </div>
 
       <h2 className="text-xl font-bold mb-3 mt-8">1. Acceptance of Terms</h2>
-      <p className="text-gray-300 mb-4">By creating an account or using AI Payment Proxy ("Service," "we," "us," or "our"), you ("User," "you") agree to be bound by these Terms of Service and all applicable laws. If you do not agree, you may not use our Service. You must be at least 18 years old and legally capable of entering binding contracts to use this Service.</p>
+      <p className="text-gray-300 mb-4">
+        {`By creating an account or using AI Payment Proxy ("Service," "we," "us," or "our"), you ("User," "you") agree to be bound by these Terms of Service and all applicable laws. If you do not agree, you may not use our Service. You must be at least 18 years old and legally capable of entering binding contracts to use this Service.`}
+      </p>
 
       <h2 className="text-xl font-bold mb-3 mt-8">2. Service Description</h2>
-      <p className="text-gray-300 mb-4">AI Payment Proxy provides a software platform and API that enables developers to issue single-use virtual payment cards for use by AI agents and automated systems. We are a technology platform, not a financial institution. Card issuance is performed by Stripe, Inc. and its banking partners under Stripe's own licenses and regulatory framework. Your use of virtual cards is subject to Stripe's Terms of Service and Stripe Issuing terms in addition to these terms.</p>
+      <p className="text-gray-300 mb-4">AI Payment Proxy provides a software platform and API that enables developers to issue single-use virtual payment cards for use by AI agents and automated systems. We are a technology platform, not a financial institution. Card issuance is performed by Stripe, Inc. and its banking partners under Stripe&apos;s own licenses and regulatory framework. Your use of virtual cards is subject to Stripe&apos;s Terms of Service and Stripe Issuing terms in addition to these terms.</p>
 
       <h2 className="text-xl font-bold mb-3 mt-8">3. Account Requirements</h2>
       <p className="text-gray-300 mb-2">To use our Service you must:</p>
@@ -59,7 +61,7 @@ export default function Terms() {
       <p className="text-gray-300 mb-4">To the maximum extent permitted by applicable law, AI Payment Proxy and its officers, directors, employees, and agents shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including lost profits, data loss, or business interruption, arising from your use of the Service. Our total liability for any claim arising from these terms or your use of the Service shall not exceed the greater of (a) the amount of fees you paid us in the 30 days preceding the claim or (b) $100 USD.</p>
 
       <h2 className="text-xl font-bold mb-3 mt-8">10. Indemnification</h2>
-      <p className="text-gray-300 mb-4">You agree to indemnify, defend, and hold harmless AI Payment Proxy and its affiliates from any claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys' fees) arising from your use of the Service, violation of these Terms, actions of your AI agents, or infringement of any third-party rights.</p>
+      <p className="text-gray-300 mb-4">You agree to indemnify, defend, and hold harmless AI Payment Proxy and its affiliates from any claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys&apos; fees) arising from your use of the Service, violation of these Terms, actions of your AI agents, or infringement of any third-party rights.</p>
 
       <h2 className="text-xl font-bold mb-3 mt-8">11. Termination</h2>
       <p className="text-gray-300 mb-4">We reserve the right to suspend or terminate your account immediately and without notice for: violation of these Terms, suspected fraud or illegal activity, activity that poses risk to our platform or other users, or failure to maintain required account information. Upon termination, your API key will be revoked and outstanding card authorizations may be declined. We will attempt to refund any remaining prepaid balance minus outstanding fees within 30 days of termination, unless prohibited by law or applicable regulations.</p>
@@ -74,7 +76,7 @@ export default function Terms() {
       <p className="text-gray-300 mb-4">For questions about these Terms contact us at legal@aipaymentproxy.com. For urgent account issues contact support@aipaymentproxy.com.</p>
 
       <div className="border-t border-gray-800 mt-12 pt-8">
-        <p className="text-gray-500 text-xs">AI Payment Proxy is a technology platform. Virtual cards are issued by Stripe's banking partners. We are not a bank, credit union, or licensed money transmitter. This document does not constitute legal or financial advice.</p>
+        <p className="text-gray-500 text-xs">AI Payment Proxy is a technology platform. Virtual cards are issued by Stripe&apos;s banking partners. We are not a bank, credit union, or licensed money transmitter. This document does not constitute legal or financial advice.</p>
       </div>
     </div>
   );

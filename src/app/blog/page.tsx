@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import BlogDropdown from "../components/BlogDropdown";
 import Link from "next/link";
+import Image from "next/image";
 
 const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800&q=80",
@@ -51,11 +52,13 @@ export default async function BlogPage() {
               href={"/blog/" + post.slug}
               className="block bg-[#111827] border border-gray-800 rounded-2xl overflow-hidden hover:border-gray-600 transition-colors group"
             >
-              <div className="h-52 overflow-hidden">
-                <img
+              <div className="relative h-52 overflow-hidden">
+                <Image
                   src={FALLBACK_IMAGES[i % FALLBACK_IMAGES.length]}
                   alt={post.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  fill
+                  sizes="(max-width: 896px) 100vw, 896px"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
               <div className="p-8">

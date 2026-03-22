@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import BlogDropdown from "../../components/BlogDropdown";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 
 export const revalidate = 3600;
 
@@ -95,8 +96,15 @@ export default async function BlogPost({ params }: { params: { slug: string } })
         </div>
       </nav>
 
-      <div className="w-full h-80 overflow-hidden">
-        <img src={IMAGES[imgIndex]} alt={post.title} className="w-full h-full object-cover" />
+      <div className="relative w-full h-80 overflow-hidden">
+        <Image
+          src={IMAGES[imgIndex]}
+          alt={post.title}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
       </div>
 
       <div className="max-w-3xl mx-auto px-8 py-16">

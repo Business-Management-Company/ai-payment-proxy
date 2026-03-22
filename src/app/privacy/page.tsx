@@ -41,7 +41,7 @@ export default function Privacy() {
       <h2 className="text-xl font-bold mb-3 mt-8">3. Third-Party Services</h2>
       <p className="text-gray-300 mb-2">We share data with the following third parties solely to provide our Service:</p>
       <ul className="text-gray-300 mb-4 space-y-2 ml-4">
-        <li>• <strong className="text-white">Stripe, Inc.</strong> — payment processing, card issuance, and bank connectivity. Stripe stores your payment method details and bank account information. Stripe's Privacy Policy applies to data they process. Stripe is PCI-DSS Level 1 certified.</li>
+        <li>• <strong className="text-white">Stripe, Inc.</strong> — payment processing, card issuance, and bank connectivity. Stripe stores your payment method details and bank account information. Stripe&apos;s Privacy Policy applies to data they process. Stripe is PCI-DSS Level 1 certified.</li>
         <li>• <strong className="text-white">Supabase</strong> — database and authentication infrastructure hosted in the United States</li>
         <li>• <strong className="text-white">Vercel</strong> — application hosting and content delivery</li>
         <li>• <strong className="text-white">Resend</strong> — transactional email delivery</li>
@@ -80,7 +80,7 @@ export default function Privacy() {
       <h2 className="text-xl font-bold mb-3 mt-8">7. Cookies and Tracking</h2>
       <p className="text-gray-300 mb-4">We use only essential cookies required for authentication and session management. We do not use advertising cookies, third-party tracking pixels, or behavioral analytics tools. We do not use Google Analytics or similar services.</p>
 
-      <h2 className="text-xl font-bold mb-3 mt-8">8. Children's Privacy</h2>
+      <h2 className="text-xl font-bold mb-3 mt-8">8. Children&apos;s Privacy</h2>
       <p className="text-gray-300 mb-4">Our Service is not directed to individuals under 18 years of age. We do not knowingly collect personal information from minors. If you believe we have inadvertently collected information from a minor, contact us immediately at privacy@aipaymentproxy.com.</p>
 
       <h2 className="text-xl font-bold mb-3 mt-8">9. International Users</h2>
