@@ -21,7 +21,7 @@ Today's topic angles to choose from (pick the 2 most timely):
 - 5 things you can automate today with an AI agent and a virtual card
 - OpenAI Operator vs building your own agent: the payment gap
 - How Visa and Mastercard agentic commerce compares to virtual cards
-- Why enterprise AI agents cannot make purchases yet (and what developers can do now)
+- Why enterprise AI agents cannot make purchases yet
 
 ALWAYS include at least one real code example using our API:
 POST https://aipaymentproxy.com/api/v1/cards
@@ -41,7 +41,7 @@ Return your response as a valid JSON array with exactly 2 objects. No markdown, 
     "meta_description": "Under 155 characters",
     "tag": "Guide",
     "source_inspiration": "What real developer pain point inspired this",
-    "content": "Full article content here, 600-900 words, with code examples using backtick code blocks"
+    "content": "Full article content here, 600-900 words, with code examples"
   },
   {
     "slug": "second-post-slug",
@@ -55,19 +55,25 @@ Return your response as a valid JSON array with exactly 2 objects. No markdown, 
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify this is called by Vercel cron or by you manually
     const authHeader = request.headers.get("authorization");
     const cronHeader = request.headers.get("x-vercel-cron");
     if (!cronHeader && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Call Anthropic API
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({ error: "ANTHROPIC_API_KEY not set" }, { status: 500 });
+    }
+
+    console.log("Calling Anthropic API...");
+    console.log("API key prefix:", apiKey.slice(0, 15));
+
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY!,
+        "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
@@ -77,29 +83,48 @@ export async function GET(request: NextRequest) {
       }),
     });
 
+    console.log("Anthropic status:", response.status);
     const aiData = await response.json();
-    const rawText = aiData.content?.[0]?.text || "";
+    console.log("Anthropic response keys:", Object.keys(aiData));
+    console.log("Anthropic error if any:", aiData.error || "none");
+    console.log("Raw content preview:", JSON.stringify(aiData).slice(0, 300));
 
-    // Parse the JSON response
+    if (!response.ok) {
+      return NextResponse.json({
+        error: "Anthropic API error",
+        status: response.status,
+        details: aiData,
+      }, { status: 500 });
+    }
+
+    const rawText = aiData.content?.[0]?.text || "";
+    console.log("Raw text length:", rawText.length);
+    console.log("Raw text preview:", rawText.slice(0, 200));
+
+    if (!rawText) {
+      return NextResponse.json({
+        error: "Empty response from Anthropic",
+        aiData,
+      }, { status: 500 });
+    }
+
     let posts: any[] = [];
     try {
       const cleaned = rawText.replace(/```json|```/g, "").trim();
       posts = JSON.parse(cleaned);
-    } catch {
-      return NextResponse.json(
-        { error: "Failed to parse AI response", raw: rawText.slice(0, 500) },
-        { status: 500 }
-      );
+    } catch (parseErr) {
+      return NextResponse.json({
+        error: "Failed to parse AI response",
+        raw: rawText.slice(0, 1000),
+        parseError: String(parseErr),
+      }, { status: 500 });
     }
 
-    // Save to Supabase
     const supabase = createClient();
     const results = [];
 
     for (const post of posts) {
-      // Make slug unique if it already exists
       const slug = post.slug + "-" + new Date().toISOString().slice(0, 10);
-
       const { data, error } = await supabase
         .from("blog_posts")
         .insert({
@@ -130,6 +155,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
+    console.log("Caught error:", message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
