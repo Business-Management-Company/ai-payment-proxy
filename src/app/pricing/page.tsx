@@ -78,6 +78,7 @@ export default function PricingPage() {
         <div className="flex items-center gap-6">
           <a href="/docs"    className="text-gray-400 hover:text-white text-sm transition-colors">Docs</a>
           <a href="/pricing" className="text-white text-sm font-medium">Pricing</a>
+          <a href="/integrations" className="text-gray-400 hover:text-white text-sm transition-colors">Integrations</a>
           <a href="/blog"    className="text-gray-400 hover:text-white text-sm transition-colors">Blog</a>
           <a href="/login"   className="text-gray-400 hover:text-white text-sm transition-colors">Sign In</a>
           <a href="/signup"  className="bg-[#4ade80] text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-[#22c55e] transition-colors">Get API Key</a>
