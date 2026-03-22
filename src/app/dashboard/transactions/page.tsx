@@ -11,15 +11,17 @@ interface Transaction {
 }
 
 const typeStyles: Record<string, string> = {
-  deposit: "bg-green-500/10 text-green-400",
-  spend:   "bg-red-500/10 text-red-400",
-  refund:  "bg-blue-500/10 text-blue-400",
+  deposit:    "bg-green-500/10 text-green-400",
+  spend:      "bg-red-500/10 text-red-400",
+  refund:     "bg-blue-500/10 text-blue-400",
+  card_spend: "bg-purple-500/10 text-purple-400",
 };
 
 const typeIcons: Record<string, string> = {
-  deposit: "↓",
-  spend:   "↑",
-  refund:  "↩",
+  deposit:    "↓",
+  spend:      "↑",
+  refund:     "↩",
+  card_spend: "💳",
 };
 
 export default function TransactionsPage() {
@@ -31,12 +33,30 @@ export default function TransactionsPage() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase
-        .from("balance_transactions")
-        .select("*")
-        .eq("customer_id", user.id)
-        .order("created_at", { ascending: false });
-      setTxns(data || []);
+
+      const [{ data: balTxns }, { data: cardTxns }] = await Promise.all([
+        supabase.from("balance_transactions").select("*").eq("customer_id", user.id).order("created_at", { ascending: false }),
+        supabase.from("card_transactions").select("*").eq("customer_id", user.id).order("created_at", { ascending: false }),
+      ]);
+
+      const bal = (balTxns || []).map((t: any) => ({
+        id: t.id,
+        amount_usd: t.amount_usd,
+        type: t.type,
+        description: t.description,
+        created_at: t.created_at,
+      }));
+
+      const card = (cardTxns || []).map((t: any) => ({
+        id: t.id,
+        amount_usd: t.amount / 100,
+        type: "card_spend",
+        description: t.merchant_name || "Card transaction",
+        created_at: t.created_at,
+      }));
+
+      const all = [...bal, ...card].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      setTxns(all);
       setLoading(false);
     }
     load();
@@ -81,8 +101,8 @@ export default function TransactionsPage() {
                   </td>
                   <td className="px-6 py-4 text-gray-300 text-sm">{tx.description}</td>
                   <td className="px-6 py-4">
-                    <span className={tx.type === "spend" ? "text-red-400 font-mono text-sm" : "text-green-400 font-mono text-sm"}>
-                      {tx.type === "spend" ? "-" : "+"}${tx.amount_usd.toLocaleString()}
+                    <span className={tx.type === "spend" || tx.type === "card_spend" ? "text-red-400 font-mono text-sm" : "text-green-400 font-mono text-sm"}>
+                      {tx.type === "spend" || tx.type === "card_spend" ? "-" : "+"}${tx.amount_usd.toLocaleString()}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-gray-400 text-sm">

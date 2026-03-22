@@ -28,6 +28,7 @@ export default function Page() {
   const [reloadAmount,    setReloadAmount]     = useState(200);
   const [savingReload,    setSavingReload]     = useState(false);
   const [reloadSaved,     setReloadSaved]      = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const pending = customer?.pending_balance_usd || 0;
   const supabase = createClient();
 
@@ -43,6 +44,7 @@ export default function Page() {
               setReloadThreshold(cust.auto_reload_threshold || 50);
               setReloadAmount(cust.auto_reload_amount || 200);
             }
+            setDataLoaded(true);
           });
       }
     });
@@ -97,7 +99,7 @@ export default function Page() {
       </div>
 
       {/* Low balance warning */}
-      {lowBalance && (customer?.balance_usd || 0) > 0 && (
+      {dataLoaded && lowBalance && (customer?.balance_usd || 0) > 0 && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-amber-400">⚠️</span>
@@ -114,7 +116,7 @@ export default function Page() {
         </div>
       )}
 
-      {(customer?.balance_usd || 0) === 0 && (
+      {dataLoaded && (customer?.balance_usd || 0) === 0 && (
         <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-red-400">🚫</span>
