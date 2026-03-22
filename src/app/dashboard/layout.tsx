@@ -9,6 +9,7 @@ const nav = [
   { label: "Transactions", href: "/dashboard/transactions" },
   { label: "API Keys", href: "/dashboard/api-keys" },
   { label: "Settings", href: "/dashboard/settings" },
+  { label: "Admin", href: "/admin" },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
