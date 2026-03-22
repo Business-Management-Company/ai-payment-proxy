@@ -8,18 +8,13 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
         router.push("/dashboard");
-      } else {
-        supabase.auth.onAuthStateChange((event, session) => {
-          if (event === "SIGNED_IN" && session) {
-            router.push("/dashboard");
-          } else {
-            router.push("/login");
-          }
-        });
       }
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) router.push("/dashboard");
     });
   }, []);
 

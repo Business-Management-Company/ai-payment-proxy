@@ -72,10 +72,10 @@ export default function SignupPage() {
           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-700"></div></div>
           <div className="relative flex justify-center text-xs"><span className="bg-[#111827] px-2 text-gray-500">or continue with</span></div>
         </div>
-        <a href="https://loaquqkxszzeymbrayhr.supabase.co/auth/v1/authorize?provider=github&redirect_to=https://aipaymentproxy.com/dashboard" className="w-full flex items-center justify-center gap-3 border border-gray-700 text-white py-3 rounded-lg hover:border-gray-500 transition text-sm mb-3">
+        <a href="https://loaquqkxszzeymbrayhr.supabase.co/auth/v1/authorize?provider=github&redirect_to=https://aipaymentproxy.com/auth/callback" className="w-full flex items-center justify-center gap-3 border border-gray-700 text-white py-3 rounded-lg hover:border-gray-500 transition text-sm mb-3">
           Sign up with GitHub
         </a>
-        <a href="https://loaquqkxszzeymbrayhr.supabase.co/auth/v1/authorize?provider=google&redirect_to=https://aipaymentproxy.com/dashboard" className="w-full flex items-center justify-center gap-3 border border-gray-700 text-white py-3 rounded-lg hover:border-gray-500 transition text-sm mb-3">
+        <a href="https://loaquqkxszzeymbrayhr.supabase.co/auth/v1/authorize?provider=google&redirect_to=https://aipaymentproxy.com/auth/callback" className="w-full flex items-center justify-center gap-3 border border-gray-700 text-white py-3 rounded-lg hover:border-gray-500 transition text-sm mb-3">
           Sign up with Google
         </a>
         <p className="text-gray-500 text-sm mt-4 text-center">
