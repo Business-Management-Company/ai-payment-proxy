@@ -29,10 +29,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         router.replace("/login");
       }
     });
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) { setOk(true); setReady(true); }
-      else { setReady(true); router.replace("/login"); }
-    });
+    setTimeout(() => { setTimeout(() => {
+      supabase.auth.getSession().then(({ data }) => {
+        if (data.session) { setOk(true); setReady(true); }
+        else { setReady(true); router.replace("/login"); }
+      });
+    }, 800);
     return () => subscription.unsubscribe();
   }, []);
 
