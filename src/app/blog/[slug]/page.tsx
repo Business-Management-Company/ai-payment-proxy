@@ -5,6 +5,7 @@ const posts: Record<string, {
   date: string;
   readTime: string;
   tag: string;
+  image: string;
   content: string;
 }> = {
   "how-to-give-ai-agent-credit-card": {
@@ -12,6 +13,7 @@ const posts: Record<string, {
     date: "March 22, 2026",
     readTime: "6 min read",
     tag: "Guide",
+    image: "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=1200&q=80",
     content: `
 AI agents are getting remarkably capable. They can browse the web, fill out forms, interact with APIs, and increasingly — make purchases on your behalf. The problem is payment infrastructure hasn't caught up.
 
@@ -42,7 +44,7 @@ curl -X POST https://aipaymentproxy.com/api/v1/cards \\
   -d '{"label":"DoorDash order","limit_usd":25}'
 \`\`\`
 
-This returns a card ID. The card is immediately active but the number hasn't been revealed yet — it can't be used until your agent explicitly requests the credentials.
+This returns a card ID. The card is immediately active but the number hasn't been revealed yet.
 
 **Step 2: Reveal the card number**
 
@@ -51,7 +53,7 @@ curl https://aipaymentproxy.com/api/v1/cards/CARD_ID \\
   -H "Authorization: Bearer YOUR_API_KEY"
 \`\`\`
 
-This returns the full card number, CVV, and expiry. Your agent uses these at checkout exactly as a human would type a credit card.
+This returns the full card number, CVV, and expiry. Your agent uses these at checkout exactly as a human would.
 
 **Step 3: Cancel after use**
 
@@ -60,13 +62,13 @@ curl -X DELETE https://aipaymentproxy.com/api/v1/cards/CARD_ID \\
   -H "Authorization: Bearer YOUR_API_KEY"
 \`\`\`
 
-Once the purchase is complete, cancel the card. Even if you forget, the card's spending limit means it can't be used for anything beyond what you approved.
+Once the purchase is complete, cancel the card. Even if you forget, the spending limit means it can't be used beyond what you approved.
 
 ## Integrating with Claude or GPT-4
 
-In practice, you give your AI agent access to three tools: \`create_card\`, \`get_card\`, and \`cancel_card\`. Each maps directly to the API calls above. Your agent prompt looks something like this:
+In practice, you give your AI agent access to three tools: create_card, get_card, and cancel_card. Each maps directly to the API calls above. Your agent prompt looks something like this:
 
-> "You have access to a payment tool. When the user asks you to buy something, use create_card with the exact amount, reveal the card credentials, complete the purchase, then cancel the card."
+"You have access to a payment tool. When the user asks you to buy something, use create_card with the exact amount, reveal the card credentials, complete the purchase, then cancel the card."
 
 The agent handles the rest autonomously — no human in the loop required.
 
@@ -86,6 +88,7 @@ Sign up at aipaymentproxy.com, grab your API key from the dashboard, and make yo
     date: "March 22, 2026",
     readTime: "7 min read",
     tag: "Deep Dive",
+    image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1200&q=80",
     content: `
 The rise of autonomous AI agents — systems that take actions in the world on your behalf — creates a new category of infrastructure problem: payments.
 
@@ -101,12 +104,12 @@ AI agents don't have those properties. They execute instructions literally. An a
 
 Single-use virtual cards solve this by making every AI purchase explicitly authorized before it happens. The flow works like this:
 
-1. Your agent decides a purchase is needed
-2. It calls an API to create a card with a specific dollar limit
-3. The card exists only for that transaction
-4. After use, the card is canceled and can never be charged again
+- Your agent decides a purchase is needed
+- It calls an API to create a card with a specific dollar limit
+- The card exists only for that transaction
+- After use, the card is canceled and can never be charged again
 
-The key insight is that **authorization happens at card creation, not at purchase time**. By the time the card number reaches the checkout form, the spending limit is already baked in at the infrastructure level. Stripe enforces it — not your application code.
+The key insight is that authorization happens at card creation, not at purchase time. By the time the card number reaches the checkout form, the spending limit is already baked in at the infrastructure level.
 
 ## Merchant Category Controls
 
@@ -123,10 +126,11 @@ Even if an agent is compromised or makes an error, it literally cannot use a res
 There's an important security pattern in how card numbers should be handled: treat them as ephemeral secrets.
 
 Your agent should:
-1. Request the card number immediately before use
-2. Use it once at checkout
-3. Never store it anywhere
-4. Cancel the card immediately after
+
+- Request the card number immediately before use
+- Use it once at checkout
+- Never store it anywhere
+- Cancel the card immediately after
 
 This is fundamentally different from how humans store credit cards in browsers and apps. Ephemeral credentials mean there's nothing to steal — the card number that existed 60 seconds ago is already canceled.
 
@@ -140,11 +144,9 @@ This is fundamentally different from how humans store credit cards in browsers a
 
 **Contractor payments** — automatically pay freelancers upon task completion with single-use cards scoped to the exact invoice amount.
 
-## Infrastructure Requirements
+## Getting Started
 
-To build this properly you need: a card issuing API (we use Stripe Issuing), a customer authentication layer, per-customer balance management, and webhook handling for spend events.
-
-That's what AI Payment Proxy provides as a managed service — so you can skip building the infrastructure and focus on your agent.
+AI Payment Proxy provides all of this as a managed API — you get your API key, make card creation calls, and we handle the Stripe Issuing infrastructure underneath.
     `,
   },
   "ai-agent-payment-infrastructure-explained": {
@@ -152,6 +154,7 @@ That's what AI Payment Proxy provides as a managed service — so you can skip b
     date: "March 22, 2026",
     readTime: "8 min read",
     tag: "Technical",
+    image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1200&q=80",
     content: `
 Building payment infrastructure for AI agents is harder than it looks. This post covers the full technical stack — from card issuance to spend controls to webhook handling — so you understand what's actually happening when your agent makes a purchase.
 
@@ -159,7 +162,7 @@ Building payment infrastructure for AI agents is harder than it looks. This post
 
 Standard payment APIs are built for humans. Stripe, Braintree, Adyen — they all assume a human is filling out a checkout form with a stored card. AI agents need the inverse: programmatic card creation, not programmatic card storage.
 
-The right primitive is **card issuance**, not payment processing. You want to create cards on demand, not charge existing ones.
+The right primitive is card issuance, not payment processing. You want to create cards on demand, not charge existing ones.
 
 ## Stripe Issuing
 
@@ -167,26 +170,21 @@ The infrastructure layer that makes this possible is Stripe Issuing — Stripe's
 
 Key concepts:
 
-**Cardholder** — a named entity (person or business) that cards are issued to. You create one cardholder per customer.
-
-**Card** — a virtual card associated with a cardholder. Has a spending limit, optional merchant restrictions, and a status (active/canceled).
-
-**Authorization** — when a card is used, Stripe fires an authorization webhook to your server. You can approve or decline in real time based on your own logic.
-
-**Transaction** — a completed charge against a card. Stored in Stripe and available via API.
+- **Cardholder** — a named entity that cards are issued to. You create one cardholder per customer.
+- **Card** — a virtual card with a spending limit, optional merchant restrictions, and a status.
+- **Authorization** — when a card is used, Stripe fires a webhook. You can approve or decline in real time.
+- **Transaction** — a completed charge stored in Stripe and available via API.
 
 ## The API Authentication Layer
 
-Stripe Issuing gives you the card infrastructure. You still need to build an authentication layer so your customers' AI agents can access it safely.
+Stripe Issuing gives you the card infrastructure. You still need an authentication layer so your customers' AI agents can access it safely.
 
 The pattern we use:
 
-1. Each customer gets a unique API key (format: \`aipp_live_...\`)
-2. API keys are stored as SHA-256 hashes — we never store the raw key
-3. Every card API call validates the key hash against the database
-4. Cards are scoped to the customer — an agent can only see and use its own cards
-
-This means even if an API key is leaked, it can only access cards for that one customer, and each card already has a hard spending limit.
+- Each customer gets a unique API key formatted as aipp_live_...
+- API keys are stored as SHA-256 hashes — the raw key is never stored
+- Every card API call validates the key hash against the database
+- Cards are scoped to the customer — an agent can only see its own cards
 
 ## Balance Management
 
@@ -196,44 +194,32 @@ There are two funding models for AI agent payments:
 
 **Connected bank** — customers link a bank account via ACH. When a card is created, an ACH pull fires for the card amount. Funds arrive in 2-3 business days.
 
-The prepaid model is simpler and gives harder guarantees — agents can never spend more than the deposited balance. The connected model is more flexible but introduces settlement delay.
+The prepaid model gives harder guarantees — agents can never spend more than the deposited balance.
 
 ## Webhook Architecture
 
 Payments are inherently async. You need webhooks to handle events:
 
-**checkout.session.completed** — fires when a customer deposits funds. Update their balance.
+- **checkout.session.completed** — customer deposited funds, update their balance
+- **payment_intent.succeeded** — ACH cleared, move funds from pending to available
+- **customer.subscription.updated** — plan status changed, update account
+- **invoice.payment_failed** — monthly billing failed, restrict account
+- **issuing_authorization.created** — card used in real time, approve or decline
 
-**payment_intent.succeeded** — fires when ACH clears. Move funds from pending to available balance.
-
-**customer.subscription.created/updated** — fires when subscription status changes. Update plan status.
-
-**invoice.payment_failed** — fires when monthly billing fails. Downgrade or restrict account.
-
-**issuing_authorization.created** — fires in real time when a card is used. You can approve or decline programmatically here.
-
-The last one is powerful — it means you can add custom logic like "decline if merchant name doesn't match the card label" or "decline if spend velocity is too high."
-
-## The Subscription Layer
-
-On top of card infrastructure, a production AI payment service needs a subscription billing layer. Customers pay monthly for access (card quota, API rate limits, support tier) and per-card fees for usage beyond their plan limit.
-
-We use Stripe Billing for this — separate from Stripe Issuing. One Stripe account, two products: Issuing for the virtual cards, Billing for the SaaS subscription.
+The last one is powerful — you can add custom logic like declining if the merchant doesn't match the card label or if spend velocity is too high.
 
 ## What You'd Need to Build This Yourself
 
 - Stripe Issuing account (requires business verification)
 - Cardholder creation endpoint
-- Card create/reveal/cancel endpoints
+- Card create, reveal, and cancel endpoints
 - API key generation and hashing system
-- Balance management (deposits, reservations, releases)
+- Balance management for deposits, reservations, and releases
 - Webhook handler for all relevant events
 - Subscription billing with Stripe Billing
 - Customer dashboard to monitor spend
 
-That's roughly 3-4 weeks of engineering for a solid v1.
-
-AI Payment Proxy provides all of this as a managed API — you get your API key, make card creation calls, and we handle everything underneath.
+That's roughly 3-4 weeks of engineering for a solid v1. AI Payment Proxy provides all of this as a managed API so you can skip the infrastructure and focus on your agent.
     `,
   },
 };
@@ -254,18 +240,23 @@ function renderContent(content: string) {
       elements.push(
         <p key={i} className="text-white font-semibold mt-6 mb-2">{line.replace(/\*\*/g, "")}</p>
       );
-    } else if (line.startsWith("```")) {
-      const codeLines: string[] = [];
-      i++;
-      while (i < lines.length && !lines[i].startsWith("```")) {
-        codeLines.push(lines[i]);
+    } else if (line.startsWith("- **")) {
+      const items: string[] = [];
+      while (i < lines.length && lines[i].startsWith("- ")) {
+        items.push(lines[i].replace("- ", ""));
         i++;
       }
       elements.push(
-        <pre key={i} className="bg-[#0a0f1e] border border-gray-800 rounded-xl p-5 my-6 overflow-x-auto text-sm text-[#4ade80] font-mono leading-relaxed whitespace-pre">
-          {codeLines.join("\n")}
-        </pre>
+        <ul key={i} className="my-4 space-y-2">
+          {items.map((item, j) => (
+            <li key={j} className="flex gap-2 text-gray-300">
+              <span className="text-[#4ade80] mt-1 shrink-0">•</span>
+              <span dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.*?)\*\*/g, "<strong class='text-white'>$1</strong>") }} />
+            </li>
+          ))}
+        </ul>
       );
+      continue;
     } else if (line.startsWith("- ")) {
       const items: string[] = [];
       while (i < lines.length && lines[i].startsWith("- ")) {
@@ -283,6 +274,18 @@ function renderContent(content: string) {
         </ul>
       );
       continue;
+    } else if (line.startsWith("```")) {
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith("```")) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      elements.push(
+        <pre key={i} className="bg-[#0a0f1e] border border-gray-800 rounded-xl p-5 my-6 overflow-x-auto text-sm text-[#4ade80] font-mono leading-relaxed whitespace-pre">
+          {codeLines.join("\n")}
+        </pre>
+      );
     } else if (line.trim() === "") {
       // skip blank lines
     } else {
@@ -314,13 +317,22 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
         <div className="flex items-center gap-6">
           <a href="/docs"    className="text-gray-400 hover:text-white text-sm transition-colors">Docs</a>
           <a href="/pricing" className="text-gray-400 hover:text-white text-sm transition-colors">Pricing</a>
-          <a href="/blog"    className="text-white text-sm">Blog</a>
+          <a href="/blog"    className="text-white text-sm font-medium">Blog</a>
           <a href="/login"   className="text-gray-400 hover:text-white text-sm transition-colors">Sign In</a>
           <a href="/signup"  className="bg-[#4ade80] text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-[#22c55e] transition-colors">Get API Key</a>
         </div>
       </nav>
 
-      <div className="max-w-3xl mx-auto px-8 py-20">
+      {/* Hero Image */}
+      <div className="w-full h-80 overflow-hidden">
+        <img
+          src={post.image}
+          alt={post.title}
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      <div className="max-w-3xl mx-auto px-8 py-16">
         <a href="/blog" className="text-gray-500 hover:text-white text-sm transition-colors mb-8 inline-block">← Back to blog</a>
 
         <div className="flex items-center gap-3 mb-6">
@@ -343,8 +355,48 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
         </div>
       </div>
 
-      <footer className="text-center text-gray-600 pb-8 text-sm">
-        &copy; 2026 AI Payment Proxy. Built for the agentic era.
+      <footer className="border-t border-gray-800 bg-[#0a0f1e]">
+        <div className="max-w-6xl mx-auto px-8 py-16 grid grid-cols-4 gap-12">
+          <div className="col-span-1">
+            <a href="/" className="flex items-center gap-2 font-bold text-lg mb-4">
+              <span className="text-[#4ade80]">⚡</span>
+              <span>AI Payment Proxy</span>
+            </a>
+            <p className="text-gray-500 text-sm leading-relaxed">
+              Single-use virtual Visa cards for autonomous AI agents. Built for the agentic era.
+            </p>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold text-sm mb-4">Product</h4>
+            <div className="space-y-3">
+              <a href="/docs"       className="block text-gray-500 hover:text-white text-sm transition-colors">Docs</a>
+              <a href="/pricing"    className="block text-gray-500 hover:text-white text-sm transition-colors">Pricing</a>
+              <a href="/#use-cases" className="block text-gray-500 hover:text-white text-sm transition-colors">Use Cases</a>
+              <a href="/signup"     className="block text-gray-500 hover:text-white text-sm transition-colors">Get API Key</a>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold text-sm mb-4">Resources</h4>
+            <div className="space-y-3">
+              <a href="/blog" className="block text-gray-500 hover:text-white text-sm transition-colors">Blog</a>
+              <a href="/blog/how-to-give-ai-agent-credit-card" className="block text-gray-500 hover:text-white text-sm transition-colors">AI Agent Guide</a>
+              <a href="/blog/virtual-cards-autonomous-ai-agents" className="block text-gray-500 hover:text-white text-sm transition-colors">Virtual Cards Deep Dive</a>
+              <a href="/blog/ai-agent-payment-infrastructure-explained" className="block text-gray-500 hover:text-white text-sm transition-colors">Infrastructure Explained</a>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold text-sm mb-4">Account</h4>
+            <div className="space-y-3">
+              <a href="/login"   className="block text-gray-500 hover:text-white text-sm transition-colors">Sign In</a>
+              <a href="/signup"  className="block text-gray-500 hover:text-white text-sm transition-colors">Sign Up</a>
+              <a href="/privacy" className="block text-gray-500 hover:text-white text-sm transition-colors">Privacy Policy</a>
+              <a href="/terms"   className="block text-gray-500 hover:text-white text-sm transition-colors">Terms of Service</a>
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-gray-800 py-6 text-center text-gray-600 text-sm">
+          &copy; 2026 AI Payment Proxy. Built for the agentic era.
+        </div>
       </footer>
     </div>
   );

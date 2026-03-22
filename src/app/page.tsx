@@ -33,8 +33,7 @@ export default function HomePage() {
     <div
       className="min-h-screen bg-[#0a0f1e] text-white"
       style={{
-        backgroundImage:
-          "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0)",
+        backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0)",
         backgroundSize: "40px 40px",
       }}
     >
@@ -47,6 +46,7 @@ export default function HomePage() {
         <div className="flex items-center gap-6">
           <a href="/docs"        className="text-gray-400 hover:text-white text-sm transition-colors">Docs</a>
           <a href="/pricing"     className="text-gray-400 hover:text-white text-sm transition-colors">Pricing</a>
+          <a href="/blog"        className="text-gray-400 hover:text-white text-sm transition-colors">Blog</a>
           <a href="#use-cases"   className="text-gray-400 hover:text-white text-sm transition-colors">Use Cases</a>
           <a href="/login"       className="text-gray-400 hover:text-white text-sm transition-colors">Sign In</a>
           <a href="/signup"      className="bg-[#4ade80] text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-[#22c55e] transition-colors">Get API Key</a>
@@ -144,8 +144,49 @@ export default function HomePage() {
         </div>
       </div>
 
-      <footer className="text-center text-gray-600 pb-8 text-sm">
-        &copy; 2026 AI Payment Proxy. Built for the agentic era.
+      {/* ── Footer ── */}
+      <footer className="border-t border-gray-800 bg-[#0a0f1e]">
+        <div className="max-w-6xl mx-auto px-8 py-16 grid grid-cols-4 gap-12">
+          <div className="col-span-1">
+            <a href="/" className="flex items-center gap-2 font-bold text-lg mb-4">
+              <span className="text-[#4ade80]">⚡</span>
+              <span>AI Payment Proxy</span>
+            </a>
+            <p className="text-gray-500 text-sm leading-relaxed">
+              Single-use virtual Visa cards for autonomous AI agents. Built for the agentic era.
+            </p>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold text-sm mb-4">Product</h4>
+            <div className="space-y-3">
+              <a href="/docs"     className="block text-gray-500 hover:text-white text-sm transition-colors">Docs</a>
+              <a href="/pricing"  className="block text-gray-500 hover:text-white text-sm transition-colors">Pricing</a>
+              <a href="#use-cases" className="block text-gray-500 hover:text-white text-sm transition-colors">Use Cases</a>
+              <a href="/signup"   className="block text-gray-500 hover:text-white text-sm transition-colors">Get API Key</a>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold text-sm mb-4">Resources</h4>
+            <div className="space-y-3">
+              <a href="/blog"     className="block text-gray-500 hover:text-white text-sm transition-colors">Blog</a>
+              <a href="/blog/how-to-give-ai-agent-credit-card" className="block text-gray-500 hover:text-white text-sm transition-colors">AI Agent Guide</a>
+              <a href="/blog/virtual-cards-autonomous-ai-agents" className="block text-gray-500 hover:text-white text-sm transition-colors">Virtual Cards Deep Dive</a>
+              <a href="/blog/ai-agent-payment-infrastructure-explained" className="block text-gray-500 hover:text-white text-sm transition-colors">Infrastructure Explained</a>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold text-sm mb-4">Account</h4>
+            <div className="space-y-3">
+              <a href="/login"    className="block text-gray-500 hover:text-white text-sm transition-colors">Sign In</a>
+              <a href="/signup"   className="block text-gray-500 hover:text-white text-sm transition-colors">Sign Up</a>
+              <a href="/privacy"  className="block text-gray-500 hover:text-white text-sm transition-colors">Privacy Policy</a>
+              <a href="/terms"    className="block text-gray-500 hover:text-white text-sm transition-colors">Terms of Service</a>
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-gray-800 py-6 text-center text-gray-600 text-sm">
+          &copy; 2026 AI Payment Proxy. Built for the agentic era.
+        </div>
       </footer>
     </div>
   );
