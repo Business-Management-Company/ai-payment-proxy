@@ -20,7 +20,34 @@ export default function HomePage() {
         <span className="font-bold text-lg">AI Payment Proxy</span>
         <a href="/docs" className="text-gray-400 hover:text-white text-sm mr-4">Docs</a><a href="/pricing" className="text-gray-400 hover:text-white text-sm mr-4">Pricing</a><a href="/login" className="text-gray-400 hover:text-white text-sm mr-6">Sign In</a><a href="/signup" className="bg-[#4ade80] text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-[#22c55e]">Get API Key</a>
       </nav>
-      <div className="max-w-4xl mx-auto px-8 py-24 text-center">
+      <div className="max-w-6xl mx-auto px-8 py-24 border-t border-gray-800">
+      <div className="text-center mb-16">
+        <h2 className="text-3xl font-bold text-white mb-4">What will your AI agent buy?</h2>
+        <p className="text-gray-400 text-lg">Real use cases from developers building with AI Payment Proxy</p>
+      </div>
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { emoji: "pizza", title: "Food Delivery Agent", desc: "Tell your AI to order lunch under $20. It creates a card, orders DoorDash, card cancels after." },
+          { emoji: "box", title: "Auto-Restock Bot", desc: "AI monitors inventory, creates a card when supplies run low, orders from your supplier automatically." },
+          { emoji: "plane", title: "Travel Booking Agent", desc: "AI finds flights and hotels within budget. Separate card per booking. Unused cards auto-cancel." },
+          { emoji: "chart", title: "Price Drop Buyer", desc: "AI watches a product 24/7. The moment price hits your target, it creates a card and buys it." },
+          { emoji: "card", title: "Trial Subscription Manager", desc: "New card for every free trial signup. You never forget to cancel. Each card has exact limit." },
+          { emoji: "target", title: "Ad Spend Controller", desc: "Give your AI marketing agent a $500 card for Facebook ads. It literally cannot overspend." },
+          { emoji: "code", title: "API Cost Control", desc: "Card for OpenAI or Anthropic API costs. Hard limit means no runaway bill surprises ever." },
+          { emoji: "server", title: "Cloud Infrastructure", desc: "Agent spins up servers, creates a card for exact cost, shuts down and cancels when done." },
+          { emoji: "brief", title: "Vendor Payments", desc: "Pay freelancers with single-use cards. Each project gets its own card with an exact limit." },
+          { emoji: "test", title: "QA Payment Testing", desc: "Test agents run checkout flows with real cards that work but cannot exceed test budgets." },
+          { emoji: "saas", title: "SaaS License Buyer", desc: "AI buys the right software licenses for new employees automatically on their first day." },
+          { emoji: "home", title: "Property Management", desc: "AI handles maintenance requests, creates cards for contractors with job-specific spending limits." },
+        ].map((uc) => (
+          <div key={uc.title} className="bg-[#111827] border border-gray-800 rounded-xl p-5 hover:border-gray-600 transition">
+            <h3 className="text-white font-semibold mb-2">{uc.title}</h3>
+            <p className="text-gray-400 text-sm leading-relaxed">{uc.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div className="max-w-4xl mx-auto px-8 py-24 text-center">
         <div className="inline-block bg-[#4ade80]/10 text-[#4ade80] text-sm px-3 py-1 rounded-full mb-6">
           Now in Private Beta
         </div>
