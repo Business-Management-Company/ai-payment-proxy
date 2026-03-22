@@ -157,7 +157,7 @@ export default function PricingPage() {
                 </li>
               </ul>
 
-              
+              <a
                 href={plan.id === "enterprise" ? "mailto:hello@aipaymentproxy.com" : "/signup?plan=" + plan.id}
                 className={`block text-center py-3 rounded-lg font-semibold transition-colors ${
                   plan.highlight
