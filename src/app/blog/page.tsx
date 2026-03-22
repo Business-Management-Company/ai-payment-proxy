@@ -1,36 +1,22 @@
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
-const posts = [
-  {
-    slug: "how-to-give-ai-agent-credit-card",
-    title: "How to Give Your AI Agent a Credit Card",
-    desc: "A practical guide to enabling autonomous AI purchasing with virtual cards, spending limits, and the API calls that make it work.",
-    date: "March 22, 2026",
-    readTime: "6 min read",
-    tag: "Guide",
-    image: "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800&q=80",
-  },
-  {
-    slug: "virtual-cards-autonomous-ai-agents",
-    title: "Virtual Cards for Autonomous AI Agents",
-    desc: "Why single-use virtual cards are the only safe way to give an AI agent payment capability — and how the infrastructure works under the hood.",
-    date: "March 22, 2026",
-    readTime: "7 min read",
-    tag: "Deep Dive",
-    image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&q=80",
-  },
-  {
-    slug: "ai-agent-payment-infrastructure-explained",
-    title: "AI Agent Payment Infrastructure Explained",
-    desc: "The full stack behind secure AI payments: Stripe Issuing, API key auth, spend controls, and why this problem is harder than it looks.",
-    date: "March 22, 2026",
-    readTime: "8 min read",
-    tag: "Technical",
-    image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&q=80",
-  },
+const FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800&q=80",
+  "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&q=80",
+  "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&q=80",
 ];
 
-export default function BlogPage() {
+export const revalidate = 3600;
+
+export default async function BlogPage() {
+  const supabase = createClient();
+  const { data: posts } = await supabase
+    .from("blog_posts")
+    .select("slug, title, meta_description, tag, created_at")
+    .eq("published", true)
+    .order("created_at", { ascending: false });
+
   return (
     <div className="min-h-screen bg-[#0a0f1e] text-white"
       style={{
@@ -58,13 +44,15 @@ export default function BlogPage() {
           <p className="text-gray-400 text-lg">Technical guides and deep dives on AI agent payments.</p>
         </div>
         <div className="space-y-8">
-          {posts.map(post => (
-            <Link key={post.slug} href={"/blog/" + post.slug}
+          {(posts || []).map((post, i) => (
+            <Link
+              key={post.slug}
+              href={"/blog/" + post.slug}
               className="block bg-[#111827] border border-gray-800 rounded-2xl overflow-hidden hover:border-gray-600 transition-colors group"
             >
               <div className="h-52 overflow-hidden">
                 <img
-                  src={post.image}
+                  src={FALLBACK_IMAGES[i % FALLBACK_IMAGES.length]}
                   alt={post.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -72,12 +60,12 @@ export default function BlogPage() {
               <div className="p-8">
                 <div className="flex items-center gap-3 mb-4">
                   <span className="bg-[#4ade80]/10 text-[#4ade80] text-xs font-bold px-3 py-1 rounded-full">{post.tag}</span>
-                  <span className="text-gray-500 text-sm">{post.date}</span>
-                  <span className="text-gray-600 text-sm">·</span>
-                  <span className="text-gray-500 text-sm">{post.readTime}</span>
+                  <span className="text-gray-500 text-sm">
+                    {new Date(post.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                  </span>
                 </div>
                 <h2 className="text-xl font-bold mb-3 group-hover:text-[#4ade80] transition-colors">{post.title}</h2>
-                <p className="text-gray-400 leading-relaxed">{post.desc}</p>
+                <p className="text-gray-400 leading-relaxed">{post.meta_description}</p>
                 <div className="mt-4 text-[#4ade80] text-sm font-medium">Read article →</div>
               </div>
             </Link>
@@ -92,35 +80,32 @@ export default function BlogPage() {
               <span className="text-[#4ade80]">⚡</span>
               <span>AI Payment Proxy</span>
             </a>
-            <p className="text-gray-500 text-sm leading-relaxed">
-              Single-use virtual Visa cards for autonomous AI agents. Built for the agentic era.
-            </p>
+            <p className="text-gray-500 text-sm leading-relaxed">Single-use virtual Visa cards for autonomous AI agents.</p>
           </div>
           <div>
             <h4 className="text-white font-semibold text-sm mb-4">Product</h4>
             <div className="space-y-3">
-              <a href="/docs"      className="block text-gray-500 hover:text-white text-sm transition-colors">Docs</a>
-              <a href="/pricing"   className="block text-gray-500 hover:text-white text-sm transition-colors">Pricing</a>
+              <a href="/docs"       className="block text-gray-500 hover:text-white text-sm transition-colors">Docs</a>
+              <a href="/pricing"    className="block text-gray-500 hover:text-white text-sm transition-colors">Pricing</a>
               <a href="/#use-cases" className="block text-gray-500 hover:text-white text-sm transition-colors">Use Cases</a>
-              <a href="/signup"    className="block text-gray-500 hover:text-white text-sm transition-colors">Get API Key</a>
+              <a href="/signup"     className="block text-gray-500 hover:text-white text-sm transition-colors">Get API Key</a>
             </div>
           </div>
           <div>
             <h4 className="text-white font-semibold text-sm mb-4">Resources</h4>
             <div className="space-y-3">
-              <a href="/blog"      className="block text-gray-500 hover:text-white text-sm transition-colors">Blog</a>
-              <a href="/blog/how-to-give-ai-agent-credit-card" className="block text-gray-500 hover:text-white text-sm transition-colors">AI Agent Guide</a>
-              <a href="/blog/virtual-cards-autonomous-ai-agents" className="block text-gray-500 hover:text-white text-sm transition-colors">Virtual Cards Deep Dive</a>
-              <a href="/blog/ai-agent-payment-infrastructure-explained" className="block text-gray-500 hover:text-white text-sm transition-colors">Infrastructure Explained</a>
+              <a href="/blog"           className="block text-gray-500 hover:text-white text-sm transition-colors">Blog</a>
+              <a href="/integrations"   className="block text-gray-500 hover:text-white text-sm transition-colors">Integrations</a>
+              <a href="/docs"           className="block text-gray-500 hover:text-white text-sm transition-colors">API Docs</a>
             </div>
           </div>
           <div>
             <h4 className="text-white font-semibold text-sm mb-4">Account</h4>
             <div className="space-y-3">
-              <a href="/login"    className="block text-gray-500 hover:text-white text-sm transition-colors">Sign In</a>
-              <a href="/signup"   className="block text-gray-500 hover:text-white text-sm transition-colors">Sign Up</a>
-              <a href="/privacy"  className="block text-gray-500 hover:text-white text-sm transition-colors">Privacy Policy</a>
-              <a href="/terms"    className="block text-gray-500 hover:text-white text-sm transition-colors">Terms of Service</a>
+              <a href="/login"   className="block text-gray-500 hover:text-white text-sm transition-colors">Sign In</a>
+              <a href="/signup"  className="block text-gray-500 hover:text-white text-sm transition-colors">Sign Up</a>
+              <a href="/privacy" className="block text-gray-500 hover:text-white text-sm transition-colors">Privacy Policy</a>
+              <a href="/terms"   className="block text-gray-500 hover:text-white text-sm transition-colors">Terms of Service</a>
             </div>
           </div>
         </div>
