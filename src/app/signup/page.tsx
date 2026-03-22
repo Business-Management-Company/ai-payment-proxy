@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -14,9 +14,16 @@ export default function SignupPage() {
   const [termsChecked, setTermsChecked] = useState(false);
   const [privacyChecked, setPrivacyChecked] = useState(false);
   const [activeModal, setActiveModal] = useState<"terms"|"privacy"|null>(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const supabase = createClient();
+
+  useEffect(() => {
+    (window as Window & { onTurnstileSuccess?: (token: string) => void }).onTurnstileSuccess = (token: string) => {
+      setTurnstileToken(token);
+    };
+  }, []);
 
   function handleScroll() {
     const el = scrollRef.current;
@@ -35,13 +42,24 @@ export default function SignupPage() {
     }, 50);
   }
 
-  const canSubmit = termsChecked && privacyChecked && name && email && password.length >= 8;
+  const canSubmit = termsChecked && privacyChecked && name && email && password.length >= 8 && turnstileToken !== "";
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
     setLoading(true);
     setError("");
+    const verifyRes = await fetch("/api/verify-turnstile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: turnstileToken }),
+    });
+    const verifyData = await verifyRes.json();
+    if (!verifyData.success) {
+      setError("Bot verification failed. Please refresh and try again.");
+      setLoading(false);
+      return;
+    }
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -149,6 +167,7 @@ By checking the box below you confirm you have read and agree to our Privacy Pol
 
   return (
     <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center p-4">
+      <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
 
       {activeModal && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
@@ -283,8 +302,16 @@ By checking the box below you confirm you have read and agree to our Privacy Pol
               {!termsChecked && "• Read and accept Terms of Service\n"}
               {!privacyChecked && "• Read and accept Privacy Policy\n"}
               {password.length > 0 && password.length < 8 && "• Password must be at least 8 characters"}
+              {!turnstileToken && termsChecked && privacyChecked && name && email && password.length >= 8 && "• Complete human verification below"}
             </p>
           )}
+
+          <div
+            className="cf-turnstile"
+            data-sitekey="0x4AAAAAACumghLSlzYNDXae"
+            data-callback="onTurnstileSuccess"
+            data-theme="dark"
+          />
 
           <button
             type="submit"
