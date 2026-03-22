@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const limitFloat = parseFloat(limit_usd);
 
     if (!limitFloat || limitFloat < 0.50) {
-      return NextResponse.json({ error: "limit_usd is required and must be at least 0.50" }, { status: 400 });
+      return NextResponse.json({ error: "limit_usd must be at least $0.50" }, { status: 400 });
     }
 
     const supabase = createClient();
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       currency:   "usd",
       type:       "virtual",
       spending_controls: {
-        spending_limits: [{ amount: limitFloat * 100, interval: "per_authorization" }],
+        spending_limits: [{ amount: Math.round(limitFloat * 100), interval: "per_authorization" }],
         ...(merchant_category ? { allowed_categories: [merchant_category] } : {}),
       },
     };

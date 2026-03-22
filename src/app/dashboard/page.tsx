@@ -29,25 +29,42 @@ export default function Page() {
   const [savingReload,    setSavingReload]     = useState(false);
   const [reloadSaved,     setReloadSaved]      = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [activeCardCount, setActiveCardCount] = useState(0);
+  const [totalSpend, setTotalSpend] = useState(0);
   const pending = customer?.pending_balance_usd || 0;
   const supabase = createClient();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) {
-        setEmail(data.user.email ?? "");
-        supabase.from("customers").select("*").eq("id", data.user.id).single()
-          .then(({ data: cust }) => {
-            if (cust) {
-              setCustomer(cust);
-              setReloadEnabled(cust.auto_reload_enabled || false);
-              setReloadThreshold(cust.auto_reload_threshold || 50);
-              setReloadAmount(cust.auto_reload_amount || 200);
-            }
-            setDataLoaded(true);
-          });
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) return;
+      setEmail(data.user.email ?? "");
+      const { data: cust } = await supabase.from("customers").select("*").eq("id", data.user.id).single();
+      if (cust) {
+        setCustomer(cust);
+        setReloadEnabled(cust.auto_reload_enabled || false);
+        setReloadThreshold(cust.auto_reload_threshold || 50);
+        setReloadAmount(cust.auto_reload_amount || 200);
+
+        const { data: activeCards } = await supabase
+          .from("virtual_cards")
+          .select("id", { count: "exact" })
+          .eq("customer_id", data.user.id)
+          .eq("status", "active");
+
+        const { data: allCards } = await supabase
+          .from("virtual_cards")
+          .select("limit_usd")
+          .eq("customer_id", data.user.id)
+          .eq("status", "canceled");
+
+        const totalSpend = (allCards || []).reduce((sum, c) => sum + (c.limit_usd || 0), 0);
+
+        setActiveCardCount(activeCards?.length || 0);
+        setTotalSpend(totalSpend);
       }
-    });
+      setDataLoaded(true);
+    })();
   }, []);
 
   const net     = parseFloat(amount) || 0;
@@ -365,11 +382,11 @@ export default function Page() {
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-[#111827] border border-gray-800 rounded-xl p-6">
           <p className="text-gray-400 text-sm">Active Cards</p>
-          <p className="text-white text-3xl font-bold mt-2">0</p>
+          <p className="text-white text-3xl font-bold mt-2">{activeCardCount}</p>
         </div>
         <div className="bg-[#111827] border border-gray-800 rounded-xl p-6">
           <p className="text-gray-400 text-sm">Total Spend</p>
-          <p className="text-white text-3xl font-bold mt-2">$0</p>
+          <p className="text-white text-3xl font-bold mt-2">${totalSpend.toLocaleString()}</p>
         </div>
         <div className="bg-[#111827] border border-gray-800 rounded-xl p-6">
           <p className="text-gray-400 text-sm">Cards Remaining</p>
