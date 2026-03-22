@@ -46,20 +46,25 @@ export default function Page() {
 
   async function handleConnectBank() {
     setConnecting(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user || !customer?.stripe_customer_id) {
-      alert("Account setup incomplete. Please contact support.");
-      setConnecting(false);
-      return;
-    }
-    const res = await fetch("/api/connect-bank", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customerId: customer.stripe_customer_id }),
-    });
-    const data = await res.json();
-    if (data.error) { alert(data.error); setConnecting(false); return; }
-    window.location.href = "https://connect.stripe.com/setup/s/" + data.clientSecret;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !customer?.stripe_customer_id) {
+        alert("Account setup incomplete. Please contact support.");
+        setConnecting(false);
+        return;
+      }
+      const res = await fetch("/api/connect-bank", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customerId: customer.stripe_customer_id }),
+      });
+      const data = await res.json();
+      if (data.error) { alert(data.error); setConnecting(false); return; }
+      const stripe = (window as any).Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+      const result = await stripe.collectBankAccountToken({ clientSecret: data.clientSecret });
+      if (result.error) { alert(result.error.message); } 
+      else { alert("Bank connected successfully!"); window.location.reload(); }
+    } catch(e) { alert("Failed to connect bank"); }
     setConnecting(false);
   }
 
