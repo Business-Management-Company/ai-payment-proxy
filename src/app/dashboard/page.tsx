@@ -10,6 +10,7 @@ interface Customer {
   connected_bank_last4: string;
   connected_bank_account_id: string;
   cards_used_this_month: number;
+  pending_balance_usd: number;
 }
 
 export default function Page() {
