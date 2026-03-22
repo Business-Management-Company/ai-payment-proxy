@@ -3,11 +3,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 
-const nav = [
+const nav: { label: string; href: string; icon?: string }[] = [
   { label: "Overview", href: "/dashboard" },
   { label: "Cards", href: "/dashboard/cards" },
   { label: "Transactions", href: "/dashboard/transactions" },
   { label: "API Keys", href: "/dashboard/api-keys" },
+  { label: "Integrations", href: "/dashboard/integrations", icon: "🔌" },
   { label: "Settings", href: "/dashboard/settings" },
   { label: "Admin", href: "/admin" },
 ];
@@ -51,7 +52,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               href={item.href}
               className={"block px-3 py-2 rounded-lg text-sm transition " + (pathname === item.href ? "text-[#4ade80] bg-[#4ade80]/10 font-medium" : "text-gray-400 hover:text-white hover:bg-[#1a2235]")}
             >
-              {item.label}
+              {item.icon ? (
+                <span className="inline-flex items-center gap-2">
+                  <span aria-hidden>{item.icon}</span>
+                  {item.label}
+                </span>
+              ) : (
+                item.label
+              )}
             </a>
           ))}
         </nav>

@@ -107,12 +107,12 @@ export default function HomePage() {
         </div>
         <div className="grid grid-cols-3 gap-4">
           {[
-            { icon: "✈️", name: "Telegram", desc: "Create cards via chat", badge: "Live Now", badgeColor: "text-[#4ade80]", href: "https://t.me/AIpaymentproxybot" },
-            { icon: "🤖", name: "Claude", desc: "Native tool use", badge: "Available", badgeColor: "text-blue-400", href: "/integrations" },
-            { icon: "💬", name: "ChatGPT", desc: "GPT Actions", badge: "Available", badgeColor: "text-blue-400", href: "/integrations" },
-            { icon: "🔄", name: "n8n", desc: "Workflow automation", badge: "Available", badgeColor: "text-blue-400", href: "/integrations" },
-            { icon: "⚡", name: "Zapier", desc: "No-code automation", badge: "Coming Soon", badgeColor: "text-gray-500", href: "/integrations" },
-            { icon: "💬", name: "WhatsApp", desc: "Message to pay", badge: "Coming Soon", badgeColor: "text-gray-500", href: "/integrations" },
+            { bg: "bg-[#229ED9]", letter: "T", name: "Telegram", desc: "Create cards via chat — no code needed", badge: "Live Now", badgeColor: "text-[#4ade80]", href: "https://t.me/AIpaymentproxybot" },
+            { bg: "bg-[#CC785C]", letter: "C", name: "Claude", desc: "Native tool use — 3 lines of config", badge: "Available", badgeColor: "text-blue-400", href: "/integrations" },
+            { bg: "bg-[#10a37f]", letter: "G", name: "ChatGPT", desc: "GPT Actions — paste schema and go", badge: "Available", badgeColor: "text-blue-400", href: "/integrations" },
+            { bg: "bg-[#EA4B71]", letter: "n", name: "n8n", desc: "HTTP Request node — 5 minute setup", badge: "Available", badgeColor: "text-blue-400", href: "/integrations" },
+            { bg: "bg-[#FF4A00]", letter: "Z", name: "Zapier", desc: "7,000+ app connections", badge: "Coming Soon", badgeColor: "text-gray-500", href: "/integrations" },
+            { bg: "bg-[#25D366]", letter: "W", name: "WhatsApp", desc: "Message to create cards", badge: "Coming Soon", badgeColor: "text-gray-500", href: "/integrations" },
           ].map((integ) => (
             <a
               key={integ.name}
@@ -121,7 +121,9 @@ export default function HomePage() {
               rel={integ.href.startsWith("http") ? "noopener noreferrer" : undefined}
               className="bg-[#111827] border border-gray-800 rounded-xl p-6 hover:border-gray-600 transition-colors flex items-center gap-4 group"
             >
-              <span className="text-3xl">{integ.icon}</span>
+              <div className={"w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg shrink-0 " + integ.bg}>
+                {integ.letter}
+              </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="text-white font-semibold text-sm">{integ.name}</h3>
@@ -133,7 +135,9 @@ export default function HomePage() {
           ))}
         </div>
         <div className="text-center mt-8">
-          <a href="/integrations" className="text-[#4ade80] text-sm hover:underline">View all integrations and setup guides →</a>
+          <a href="/integrations" className="text-[#4ade80] text-sm hover:underline">
+            View setup guides for all integrations →
+          </a>
         </div>
       </div>
 
