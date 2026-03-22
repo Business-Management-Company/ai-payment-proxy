@@ -18,7 +18,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#0a0f1e] text-white">
       <nav className="flex justify-between items-center px-8 py-6 border-b border-gray-800">
         <span className="font-bold text-lg">AI Payment Proxy</span>
-        <a href="/pricing" className="text-gray-400 hover:text-white text-sm mr-4">Pricing</a><a href="/login" className="bg-[#4ade80] text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-[#22c55e]">
+        <a href="/docs" className="text-gray-400 hover:text-white text-sm mr-4">Docs</a><a href="/pricing" className="text-gray-400 hover:text-white text-sm mr-4">Pricing</a><a href="/login" className="text-gray-400 hover:text-white text-sm mr-6">Sign In</a><a href="/signup" className="bg-[#4ade80] text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-[#22c55e]">
           Pricing
         </a>
       </nav>
