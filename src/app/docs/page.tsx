@@ -6,7 +6,7 @@ const endpoints = [
     method: "POST",
     path: "/api/v1/cards",
     title: "Create a virtual card",
-    description: "Creates a single-use virtual Visa card with a hard spending limit. The card is immediately active and can be used for online purchases. Cards auto-cancel after the spending limit is reached.",
+    description: "Issues a single-use virtual Visa card scoped to your AI agent. The card is immediately active with a hard spending limit — your agent cannot overspend. Ideal for autonomous purchasing workflows where a human is not in the loop. In test mode, use Stripe test card numbers.",
     body: JSON.stringify({ label: "Amazon purchase", limit_usd: 50, merchant_category: "general_merchandise" }, null, 2),
     response: JSON.stringify({ success: true, data: { id: "6d910c90-4639-43e8-9411-22acf35f6644", stripe_card_id: "ic_1TDm4AACuqYQOhbF", label: "Amazon purchase", limit_usd: 50, status: "active", created_at: "2026-03-22T13:29:18Z" } }, null, 2),
     params: [
@@ -30,7 +30,7 @@ const endpoints = [
     method: "GET",
     path: "/api/v1/cards/:id",
     title: "Reveal card details",
-    description: "Returns the full card number, CVV, and expiry date for a virtual card. This is the endpoint your AI agent calls to get payment credentials. Only call this immediately before making a purchase.",
+    description: "Returns the full card number, CVV, and expiry for an AI agent to use at checkout. Only call this immediately before making a purchase — treat card credentials like secrets. In test mode, card numbers are Stripe test values (e.g. 4000009990000021) and only work in test environments.",
     body: null,
     response: JSON.stringify({ success: true, data: { id: "6d910c90-4639-43e8-9411-22acf35f6644", number: "4000009990000021", cvc: "123", exp_month: 12, exp_year: 2028, limit_usd: 50, status: "active" } }, null, 2),
     params: []
@@ -100,7 +100,31 @@ export default function DocsPage() {
         </div>
       </nav>
       <div className="max-w-7xl mx-auto px-8 py-12 flex gap-8">
-        <div className="w-64 shrink-0">
+    <div className="bg-[#111827] border border-[#4ade80]/20 rounded-2xl p-8 mb-12">
+    <div className="flex items-center gap-3 mb-6">
+      <span className="bg-[#4ade80]/10 text-[#4ade80] text-xs font-bold px-3 py-1 rounded-full">QUICKSTART</span>
+      <span className="bg-amber-500/10 text-amber-400 text-xs font-bold px-3 py-1 rounded-full">TEST MODE</span>
+    </div>
+    <h2 className="text-2xl font-bold mb-2">Give your AI agent a credit card in 3 API calls</h2>
+    <p className="text-gray-400 mb-8">AI Payment Proxy issues single-use virtual Visa cards for autonomous AI agents. Your agent creates a card with a hard spending limit, reveals the card number, makes a purchase, and the card auto-cancels. No human in the loop.</p>
+    <div className="grid grid-cols-3 gap-4 mb-8">
+      {[
+        { step: "01", title: "Create a card", desc: "Your AI calls our API with a spending limit. A real Visa card is issued instantly.", color: "text-[#4ade80]" },
+        { step: "02", title: "Reveal credentials", desc: "Get the card number, CVV, and expiry. Use these at any online checkout.", color: "text-blue-400" },
+        { step: "03", title: "Card auto-cancels", desc: "After the purchase, cancel the card via API. Limit reached = auto-canceled.", color: "text-purple-400" },
+      ].map(s => (
+        <div key={s.step} className="bg-[#0a0f1e] rounded-xl p-4">
+          <div className={"text-2xl font-bold mb-2 " + s.color}>{s.step}</div>
+          <p className="text-white font-semibold text-sm mb-1">{s.title}</p>
+          <p className="text-gray-500 text-xs">{s.desc}</p>
+        </div>
+      ))}
+    </div>
+    <pre className="bg-[#0a0f1e] rounded-xl p-4 text-sm font-mono text-gray-300 overflow-x-auto">
+      {`# Step 1: Create a card for your AI agent\ncurl -X POST https://aipaymentproxy.com/api/v1/cards \\\n  -H "Authorization: Bearer YOUR_API_KEY" \\\n  -d '{"label":"Shopping Agent","limit_usd":50}'\n\n# Step 2: Reveal card number + CVV\ncurl https://aipaymentproxy.com/api/v1/cards/CARD_ID \\\n  -H "Authorization: Bearer YOUR_API_KEY"\n\n# Step 3: Cancel after use\ncurl -X DELETE https://aipaymentproxy.com/api/v1/cards/CARD_ID \\\n  -H "Authorization: Bearer YOUR_API_KEY"`}
+    </pre>
+  </div>
+      <div className="w-64 shrink-0">
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Endpoints</h3>
           <div className="space-y-1">
             {endpoints.map((e, i) => (
