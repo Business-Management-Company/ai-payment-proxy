@@ -1,47 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const BLOG_PROMPT = `You are a technical content writer for AI Payment Proxy (aipaymentproxy.com) — a SaaS platform that gives AI agents single-use virtual Visa cards with hard spending limits via a simple REST API. Developers use it to give Claude, ChatGPT, n8n, LangChain and other AI agents the ability to make real purchases safely.
 
-Write 2 SEO-optimized blog posts for developers building AI agents. Each post should be 600-900 words.
+Write 2 SEO-optimized blog posts for developers building AI agents. Each post should be 400-600 words each.
 
 Today's topic angles to choose from (pick the 2 most timely):
-- How to give Claude/ChatGPT/any AI agent a credit card safely
+- How to give Claude or ChatGPT a credit card safely
 - Virtual cards vs giving an AI your real credit card number
 - How to set hard spending limits on AI agent purchases
-- n8n + virtual cards: automate purchases without exposing your card
-- LangChain payment tools: wiring up card creation in an agent
-- Why your AI agent keeps failing at checkout (the payment problem)
-- Agentic commerce is a $1 trillion market — here is the missing piece
+- n8n plus virtual cards: automate purchases without exposing your card
+- Why your AI agent keeps failing at checkout
+- 5 things you can automate today with an AI agent and a virtual card
 - How to build a food delivery AI agent that actually pays for orders
 - AI agents and cloud costs: using virtual cards to cap API spend
-- The DoorDash problem: how AI agents overspend without spending limits
-- 5 things you can automate today with an AI agent and a virtual card
-- OpenAI Operator vs building your own agent: the payment gap
-- How Visa and Mastercard agentic commerce compares to virtual cards
-- Why enterprise AI agents cannot make purchases yet
 
-ALWAYS include at least one real code example using our API:
+ALWAYS include one short code example using our API:
 POST https://aipaymentproxy.com/api/v1/cards
 Header: Authorization: Bearer YOUR_API_KEY
 Body: {"label":"Shopping Agent","limit_usd":50}
 
-GET https://aipaymentproxy.com/api/v1/cards/CARD_ID
-DELETE https://aipaymentproxy.com/api/v1/cards/CARD_ID
+TONE: Technical but accessible. No fluff. Real code.
 
-TONE: Technical but accessible. Written by a developer for developers. No fluff. Honest. Real code. Real numbers.
-
-Return your response as a valid JSON array with exactly 2 objects. No markdown, no backticks, just raw JSON:
+Return ONLY a valid JSON array with exactly 2 objects. No markdown, no backticks, just raw JSON:
 [
   {
     "slug": "url-friendly-slug-here",
     "title": "Full SEO Title Here",
     "meta_description": "Under 155 characters",
     "tag": "Guide",
-    "source_inspiration": "What real developer pain point inspired this",
-    "content": "Full article content here, 600-900 words, with code examples"
+    "source_inspiration": "What developer pain point inspired this",
+    "content": "Full article content here 400-600 words"
   },
   {
     "slug": "second-post-slug",
@@ -67,7 +58,6 @@ export async function GET(request: NextRequest) {
     }
 
     console.log("Calling Anthropic API...");
-    console.log("API key prefix:", apiKey.slice(0, 15));
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -77,17 +67,14 @@ export async function GET(request: NextRequest) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 4000,
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 2000,
         messages: [{ role: "user", content: BLOG_PROMPT }],
       }),
     });
 
     console.log("Anthropic status:", response.status);
     const aiData = await response.json();
-    console.log("Anthropic response keys:", Object.keys(aiData));
-    console.log("Anthropic error if any:", aiData.error || "none");
-    console.log("Raw content preview:", JSON.stringify(aiData).slice(0, 300));
 
     if (!response.ok) {
       return NextResponse.json({
@@ -99,7 +86,6 @@ export async function GET(request: NextRequest) {
 
     const rawText = aiData.content?.[0]?.text || "";
     console.log("Raw text length:", rawText.length);
-    console.log("Raw text preview:", rawText.slice(0, 200));
 
     if (!rawText) {
       return NextResponse.json({
