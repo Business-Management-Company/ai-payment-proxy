@@ -8,14 +8,20 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        router.push("/dashboard");
-      }
-    });
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) router.push("/dashboard");
-    });
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get("access_token");
+    const refreshToken = hashParams.get("refresh_token");
+    if (accessToken && refreshToken) {
+      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken }).then(({ data }) => {
+        if (data.session) router.push("/dashboard");
+        else router.push("/login");
+      });
+    } else {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) router.push("/dashboard");
+        else router.push("/login");
+      });
+    }
   }, []);
 
   return (
