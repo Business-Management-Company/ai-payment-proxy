@@ -7,7 +7,7 @@ export default function Terms() {
     <p className="text-gray-300 mb-4">By accessing or using AI Payment Proxy, you agree to be bound by these Terms of Service. If you do not agree, do not use our service.</p>
 
     <h2 className="text-xl font-bold mb-4 mt-8">2. Service Description</h2>
-    <p className="text-gray-300 mb-4">AI Payment Proxy provides an API for issuing single-use virtual payment cards for use by AI agents and automated systems. Cards are issued through Stripe Issuing and are subject to Stripe's terms of service.</p>
+    <p className="text-gray-300 mb-4">AI Payment Proxy provides an API for issuing single-use virtual payment cards for use by AI agents and automated systems. Cards are issued through Stripe Issuing and are subject to Stripe&apos;s terms of service.</p>
 
     <h2 className="text-xl font-bold mb-4 mt-8">3. Acceptable Use</h2>
     <p className="text-gray-300 mb-4">You may only use our service for lawful purposes. You are responsible for all activity that occurs under your API key. You may not use our service for illegal transactions, money laundering, or any activity that violates applicable law.</p>
