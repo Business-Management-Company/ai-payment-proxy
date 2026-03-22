@@ -17,6 +17,7 @@ export default function Page() {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [depositing, setDepositing] = useState(false);
   const [amount, setAmount] = useState("500");
+  const pending = customer?.pending_balance_usd || 0;
   const supabase = createClient();
 
   useEffect(() => {
@@ -58,6 +59,7 @@ export default function Page() {
         <div className="bg-[#111827] border border-gray-800 rounded-xl p-6 col-span-1">
           <p className="text-gray-400 text-sm mb-1">Prepaid Balance</p>
           <p className="text-white text-3xl font-bold">${(customer?.balance_usd || 0).toLocaleString()}</p>
+          {pending > 0 && <p className="text-amber-400 text-sm mt-1">${pending} pending (ACH clearing)</p>}
           <div className="flex gap-2 mt-4">
             <input type="number" value={amount} onChange={e => setAmount(e.target.value)} className="bg-[#0a0f1e] border border-gray-700 rounded-lg px-3 py-2 text-white w-24 text-sm" min="100" />
             <button onClick={handleDeposit} disabled={depositing} className="bg-[#4ade80] text-black px-3 py-2 rounded-lg text-sm font-semibold hover:bg-[#22c55e] disabled:opacity-50">
