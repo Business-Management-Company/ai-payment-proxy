@@ -20,24 +20,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        setOk(true);
-        setReady(true);
-      } else if (event === "SIGNED_OUT") {
-        setOk(false);
-        setReady(true);
-        router.replace("/login");
-      }
+      if (session) { setOk(true); setReady(true); }
+      else if (event === "SIGNED_OUT") { setOk(false); setReady(true); router.replace("/login"); }
     });
     setTimeout(() => {
       supabase.auth.getSession().then(({ data }) => {
-        if (data.session) {
-          setOk(true);
-          setReady(true);
-        } else {
-          setReady(true);
-          router.replace("/login");
-        }
+        if (data.session) { setOk(true); setReady(true); }
+        else { setReady(true); router.replace("/login"); }
       });
     }, 800);
   }, []);
@@ -47,12 +36,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     window.location.href = "/login";
   }
 
-  if (!ready) return (
-    <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center">
-      <p className="text-white">Loading...</p>
-    </div>
-  );
-
+  if (!ready) return <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center"><p className="text-white">Loading...</p></div>;
   if (!ok) return null;
 
   return (
@@ -61,7 +45,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="text-white font-bold text-lg mb-8">AI Payment Proxy</div>
         <nav className="space-y-1 flex-1">
           {nav.map(item => (
-            
+            <a
               key={item.href}
               href={item.href}
               className={"block px-3 py-2 rounded-lg text-sm transition " + (pathname === item.href ? "text-[#4ade80] bg-[#4ade80]/10 font-medium" : "text-gray-400 hover:text-white hover:bg-[#1a2235]")}
