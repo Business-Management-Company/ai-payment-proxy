@@ -7,6 +7,8 @@ interface Customer {
   plan: string;
   funding_model: string;
   stripe_customer_id: string;
+  connected_bank_last4: string;
+  connected_bank_account_id: string;
 }
 
 export default function Page() {
@@ -22,9 +24,9 @@ export default function Page() {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
         setEmail(data.user.email ?? "");
-        supabase.from("customers").select("*").eq("id", data.user.id).single().then(({ data: c }) => {
-          setCustomer(c);
-          if (c?.funding_model === "connected") setFundingMode("bank");
+        supabase.from("customers").select("*").eq("id", data.user.id).single().then(({ data: cust }) => {
+          setCustomer(cust);
+          if (cust?.funding_model === "connected") setFundingMode("bank");
         });
       }
     });
@@ -48,11 +50,7 @@ export default function Page() {
     setConnecting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user || !customer?.stripe_customer_id) {
-        alert("Account setup incomplete. Please contact support.");
-        setConnecting(false);
-        return;
-      }
+      if (!user || !customer?.stripe_customer_id) { alert("Account setup incomplete."); setConnecting(false); return; }
       const res = await fetch("/api/connect-bank", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -60,19 +58,13 @@ export default function Page() {
       });
       const data = await res.json();
       if (data.error) { alert(data.error); setConnecting(false); return; }
-      const stripe = (window as any).Stripe;
-      if (typeof stripe !== 'function') throw new Error('Stripe.js not loaded');
-      const stripeInstance = stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-      const result = await stripeInstance.collectBankAccountToken({
-        clientSecret: data.clientSecret,
-        params: { payment_method_type: 'us_bank_account' }
-      });
+      const { loadStripe } = await import("@stripe/stripe-js");
+      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
+      if (!stripe) throw new Error("Stripe failed to load");
+      const result = await (stripe as any).collectBankAccountToken({ clientSecret: data.clientSecret, params: { payment_method_type: "us_bank_account" } });
       if (result.error) { alert(result.error.message); }
       else { alert("Bank connected successfully!"); window.location.reload(); }
-    } catch(e: unknown) { 
-      const msg = e instanceof Error ? e.message : "Failed to connect bank";
-      alert(msg); 
-    }
+    } catch(e: unknown) { alert(e instanceof Error ? e.message : "Failed"); }
     setConnecting(false);
   }
 
@@ -81,59 +73,31 @@ export default function Page() {
       <h2 className="text-white text-2xl font-bold">Overview</h2>
       <span className="text-gray-400 text-sm">{email}</span>
     </div>
-
     <div className="bg-[#111827] border border-gray-800 rounded-xl p-6 mb-6">
       <div className="flex gap-4 mb-6">
-        <button
-          onClick={() => setFundingMode("prepaid")}
-          className={`flex-1 py-3 rounded-lg text-sm font-semibold transition ${fundingMode === "prepaid" ? "bg-[#4ade80] text-black" : "bg-[#1a2235] text-gray-400 hover:text-white"}`}
-        >
-          Prepaid Balance
-        </button>
-        <button
-          onClick={() => setFundingMode("bank")}
-          className={`flex-1 py-3 rounded-lg text-sm font-semibold transition ${fundingMode === "bank" ? "bg-[#4ade80] text-black" : "bg-[#1a2235] text-gray-400 hover:text-white"}`}
-        >
-          Connect Bank
-        </button>
+        <button onClick={() => setFundingMode("prepaid")} className={`flex-1 py-3 rounded-lg text-sm font-semibold transition ${fundingMode === "prepaid" ? "bg-[#4ade80] text-black" : "bg-[#1a2235] text-gray-400 hover:text-white"}`}>Prepaid Balance</button>
+        <button onClick={() => setFundingMode("bank")} className={`flex-1 py-3 rounded-lg text-sm font-semibold transition ${fundingMode === "bank" ? "bg-[#4ade80] text-black" : "bg-[#1a2235] text-gray-400 hover:text-white"}`}>Connect Bank</button>
       </div>
-
       {fundingMode === "prepaid" ? <div>
         <p className="text-gray-400 text-sm mb-2">Available Balance</p>
         <p className="text-white text-3xl font-bold mb-4">{`$${(customer?.balance_usd || 0).toLocaleString()}`}</p>
         <div className="flex gap-3">
-          <input
-            type="number"
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
-            className="bg-[#0a0f1e] border border-gray-700 rounded-lg px-3 py-2 text-white w-32 text-sm"
-            min="100"
-            placeholder="Amount"
-          />
-          <button
-            onClick={handleDeposit}
-            disabled={depositing}
-            className="bg-[#4ade80] text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#22c55e] disabled:opacity-50"
-          >
-            {depositing ? "Redirecting..." : "Add Funds"}
-          </button>
+          <input type="number" value={amount} onChange={e => setAmount(e.target.value)} className="bg-[#0a0f1e] border border-gray-700 rounded-lg px-3 py-2 text-white w-32 text-sm" min="100" placeholder="Amount" />
+          <button onClick={handleDeposit} disabled={depositing} className="bg-[#4ade80] text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#22c55e] disabled:opacity-50">{depositing ? "Redirecting..." : "Add Funds"}</button>
         </div>
       </div> : <div>
-        <p className="text-gray-400 text-sm mb-4">Connect your bank account. We only pull funds when your AI agents spend — no prepay required.</p>
-        <div className="flex items-center gap-3 bg-[#0a0f1e] border border-gray-700 rounded-lg p-4 mb-4">
+        <p className="text-gray-400 text-sm mb-4">Connect your bank. We only pull funds when your AI agents spend.</p>
+        {customer?.connected_bank_last4 ? <div className="flex items-center gap-3 bg-[#0a0f1e] border border-[#4ade80]/30 rounded-lg p-4 mb-4">
+          <div className="w-3 h-3 rounded-full bg-[#4ade80]"></div>
+          <p className="text-white text-sm">Checking account ending in {customer.connected_bank_last4}</p>
+          <span className="ml-auto text-[#4ade80] text-xs font-semibold">CONNECTED</span>
+        </div> : <div className="flex items-center gap-3 bg-[#0a0f1e] border border-gray-700 rounded-lg p-4 mb-4">
           <div className="w-3 h-3 rounded-full bg-gray-600"></div>
           <p className="text-gray-400 text-sm">No bank connected yet</p>
-        </div>
-        <button
-          onClick={handleConnectBank}
-          disabled={connecting}
-          className="bg-[#4ade80] text-black px-6 py-3 rounded-lg text-sm font-semibold hover:bg-[#22c55e] disabled:opacity-50"
-        >
-          {connecting ? "Connecting..." : "Connect Bank Account"}
-        </button>
+        </div>}
+        <button onClick={handleConnectBank} disabled={connecting} className="bg-[#4ade80] text-black px-6 py-3 rounded-lg text-sm font-semibold hover:bg-[#22c55e] disabled:opacity-50">{connecting ? "Connecting..." : "Connect Bank Account"}</button>
       </div>}
     </div>
-
     <div className="grid grid-cols-3 gap-4">
       <div className="bg-[#111827] border border-gray-800 rounded-xl p-6">
         <p className="text-gray-400 text-sm">Active Cards</p>
