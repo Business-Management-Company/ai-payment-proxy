@@ -33,7 +33,19 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-        <p className="text-gray-500 text-sm mt-4 text-center">
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-700"></div></div>
+          <div className="relative flex justify-center text-xs"><span className="bg-[#111827] px-2 text-gray-500">or continue with</span></div>
+        </div>
+        <div className="space-y-3">
+          <a href="https://loaquqkxszzeymbrayhr.supabase.co/auth/v1/authorize?provider=github&redirect_to=https://aipaymentproxy.com/dashboard" className="w-full flex items-center justify-center gap-3 border border-gray-700 text-white py-3 rounded-lg hover:border-gray-500 transition text-sm">
+            Sign in with GitHub
+          </a>
+          <a href="https://loaquqkxszzeymbrayhr.supabase.co/auth/v1/authorize?provider=google&redirect_to=https://aipaymentproxy.com/dashboard" className="w-full flex items-center justify-center gap-3 border border-gray-700 text-white py-3 rounded-lg hover:border-gray-500 transition text-sm">
+            Sign in with Google
+          </a>
+        </div>
+        <p className="text-gray-500 text-sm mt-6 text-center">
           No account? <a href="/signup" className="text-[#4ade80]">Sign up</a>
         </p>
       </div>
