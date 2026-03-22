@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import BlogDropdown from "../components/BlogDropdown";
 import Link from "next/link";
 
 const FALLBACK_IMAGES = [
@@ -92,12 +93,7 @@ export default async function BlogPage() {
             </div>
           </div>
           <div>
-            <h4 className="text-white font-semibold text-sm mb-4">Resources</h4>
-            <div className="space-y-3">
-              <a href="/blog"           className="block text-gray-500 hover:text-white text-sm transition-colors">Blog</a>
-              <a href="/integrations"   className="block text-gray-500 hover:text-white text-sm transition-colors">Integrations</a>
-              <a href="/docs"           className="block text-gray-500 hover:text-white text-sm transition-colors">API Docs</a>
-            </div>
+            <BlogDropdown />
           </div>
           <div>
             <h4 className="text-white font-semibold text-sm mb-4">Account</h4>
