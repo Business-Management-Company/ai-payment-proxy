@@ -36,26 +36,27 @@ export async function POST(request: NextRequest) {
   try {
     const customer = await authenticateApiKey(request);
     const { label, limit_usd, merchant_category } = await request.json();
+    const limitFloat = parseFloat(limit_usd);
 
-    if (!limit_usd || limit_usd < 1) {
-      return NextResponse.json({ error: "limit_usd is required and must be at least 1" }, { status: 400 });
+    if (!limitFloat || limitFloat < 0.50) {
+      return NextResponse.json({ error: "limit_usd is required and must be at least 0.50" }, { status: 400 });
     }
 
     const supabase = createClient();
     const currentBalance = customer.balance_usd || 0;
 
     // Check sufficient balance
-    if (currentBalance < limit_usd) {
+    if (currentBalance < limitFloat) {
       return NextResponse.json({
         error: "Insufficient balance",
         code: "insufficient_balance",
         balance_usd: currentBalance,
-        required_usd: limit_usd,
-        shortfall_usd: +(limit_usd - currentBalance).toFixed(2),
+        required_usd: limitFloat,
+        shortfall_usd: +(limitFloat - currentBalance).toFixed(2),
         action: "Add funds at https://aipaymentproxy.com/dashboard",
         add_funds_url: "https://aipaymentproxy.com/dashboard",
         tip: currentBalance > 0
-          ? `You have $${currentBalance} available. Deposit at least $${+(limit_usd - currentBalance).toFixed(2)} more to create this card.`
+          ? `You have $${currentBalance} available. Deposit at least $${+(limitFloat - currentBalance).toFixed(2)} more to create this card.`
           : "Your balance is $0. Add funds via ACH (free) or card at aipaymentproxy.com/dashboard",
       }, { status: 402 });
     }
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
       currency:   "usd",
       type:       "virtual",
       spending_controls: {
-        spending_limits: [{ amount: limit_usd * 100, interval: "per_authorization" }],
+        spending_limits: [{ amount: limitFloat * 100, interval: "per_authorization" }],
         ...(merchant_category ? { allowed_categories: [merchant_category] } : {}),
       },
     };
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
         customer_id:       customer.id,
         stripe_card_id:    stripeCard.id,
         label:             label || "",
-        limit_usd,
+        limit_usd: limitFloat,
         merchant_category: merchant_category || "all",
         status:            "active",
       })
