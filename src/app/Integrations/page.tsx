@@ -2,6 +2,43 @@ import Link from "next/link";
 
 const integrations = [
   {
+    id: "telegram",
+    name: "Telegram Bot",
+    logo: "✈️",
+    badge: "Live Now",
+    badgeColor: "bg-[#4ade80]/10 text-[#4ade80]",
+    desc: "The fastest way to create virtual cards — no code required. Any Telegram user can connect their AIPP API key and start issuing cards in 60 seconds.",
+    steps: [
+      "Open Telegram and search for @AIpaymentproxybot",
+      "Type /start — the bot walks you through setup",
+      "Paste your API key from aipaymentproxy.com/dashboard/api-keys",
+      "Type /newcard and follow the prompts — card issued instantly",
+    ],
+    code: `# No code required — just Telegram commands
+
+/start
+# Bot: Welcome! Paste your AIPP API key to get started.
+
+aipp_live_YOUR_KEY_HERE
+# Bot: ✅ API key connected! You're all set.
+
+/newcard
+# Bot: What spending limit? (e.g. 10 or 25.50)
+
+25
+# Bot: What label for this card?
+
+Amazon order
+# Bot: ✅ Virtual Card Created!
+# 💳 4000000999000062
+# 📅 Exp: 4/2029  🔐 CVC: 123
+# 🏷 Label: Amazon order
+# 💰 Limit: $25
+
+/cancel CARD_ID
+# Bot: ✅ Card canceled successfully`,
+  },
+  {
     id: "claude",
     name: "Claude (Anthropic)",
     logo: "🤖",
@@ -294,7 +331,7 @@ export default function IntegrationsPage() {
           </div>
           <h1 className="text-4xl font-bold mb-4">Integrations</h1>
           <p className="text-gray-400 text-xl max-w-2xl mx-auto">
-            AI Payment Proxy is a standard REST API. If your agent platform supports HTTP calls or tool use, you can integrate in minutes.
+            AI Payment Proxy is a standard REST API. Connect via Telegram in 60 seconds — no code required — or integrate directly into any agent platform that supports HTTP calls.
           </p>
         </div>
 
