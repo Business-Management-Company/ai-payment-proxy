@@ -13,7 +13,7 @@ const PLAN_PRICE_IDS: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, email, name, plan = "developer" } = await request.json();
+    const { userId, email, name, plan = "developer", telegram = "" } = await request.json();
     const supabase = createClient();
 
     const { data: existing } = await supabase
@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
       id: userId,
       email,
       name,
+      telegram_handle: telegram,
       stripe_cardholder_id: cardholder.id,
       stripe_customer_id: customer.id,
       stripe_subscription_id: subscription.id,

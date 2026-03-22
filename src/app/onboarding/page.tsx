@@ -21,7 +21,8 @@ export default function OnboardingPage() {
         body: JSON.stringify({
           userId: session.user.id,
           email: session.user.email,
-          name: session.user.user_metadata?.name || session.user.email
+          name: session.user.user_metadata?.name || session.user.email,
+          telegram: session.user.user_metadata?.telegram ?? "",
         })
       });
       const data = await res.json();

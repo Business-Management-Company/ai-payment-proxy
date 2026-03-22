@@ -15,6 +15,7 @@ export default function SignupPage() {
   const [privacyChecked, setPrivacyChecked] = useState(false);
   const [activeModal, setActiveModal] = useState<"terms"|"privacy"|null>(null);
   const [turnstileToken, setTurnstileToken] = useState("");
+  const [telegram, setTelegram] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const supabase = createClient();
@@ -63,7 +64,7 @@ export default function SignupPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name } }
+      options: { data: { name, telegram } }
     });
     if (error) {
       setError(error.message);
@@ -246,6 +247,18 @@ By checking the box below you confirm you have read and agree to our Privacy Pol
             minLength={8}
             className="w-full bg-[#1a2235] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]"
           />
+
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">@</span>
+            <input
+              type="text"
+              placeholder="Telegram username (optional)"
+              value={telegram}
+              onChange={e => setTelegram(e.target.value.replace("@", ""))}
+              className="w-full bg-[#1a2235] border border-gray-700 rounded-lg pl-8 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]"
+            />
+          </div>
+          <p className="text-gray-600 text-xs -mt-2">Get your API key and card alerts via @AIpaymentproxybot</p>
 
           <div className="space-y-3 pt-2">
             <div className="flex items-start gap-3">
