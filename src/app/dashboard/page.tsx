@@ -60,12 +60,15 @@ export default function Page() {
       });
       const data = await res.json();
       if (data.error) { alert(data.error); setConnecting(false); return; }
-      const stripe = (window as any).Stripe("undefined");
-      const result = await stripe.financialConnections.collectBankAccountToken({
+      const stripe = (window as any).Stripe;
+      if (typeof stripe !== 'function') throw new Error('Stripe.js not loaded');
+      const stripeInstance = stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+      const result = await stripeInstance.collectBankAccountToken({
         clientSecret: data.clientSecret,
+        params: { payment_method_type: 'us_bank_account' }
       });
       if (result.error) { alert(result.error.message); }
-      else { alert("Bank connected! Account: " + result.financialConnectionsSession.accounts[0].last4); window.location.reload(); }
+      else { alert("Bank connected successfully!"); window.location.reload(); }
     } catch(e: unknown) { 
       const msg = e instanceof Error ? e.message : "Failed to connect bank";
       alert(msg); 
