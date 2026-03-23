@@ -67,8 +67,19 @@ export default function SignupPage() {
       options: { data: { name, telegram } }
     });
     if (error) {
-      setError(error.message);
+      if (
+        error.message.includes("already registered") ||
+        error.message.includes("already been registered") ||
+        error.message.includes("User already registered")
+      ) {
+        setError("An account with this email already exists. Please sign in instead.");
+      } else if (error.message.includes("Password should be")) {
+        setError("Password must be at least 8 characters.");
+      } else {
+        setError(error.message);
+      }
       setLoading(false);
+      return;
     } else {
       router.push("/onboarding");
     }
@@ -308,7 +319,14 @@ By checking the box below you confirm you have read and agree to our Privacy Pol
             </div>
           </div>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && error.includes("already exists") ? (
+            <p className="text-red-400 text-sm">
+              An account with this email already exists.{" "}
+              <a href="/login" className="text-[#4ade80] hover:underline">Sign in instead →</a>
+            </p>
+          ) : (
+            error && <p className="text-red-400 text-sm">{error}</p>
+          )}
 
           {!canSubmit && (termsChecked || privacyChecked || name || email) && (
             <p className="text-gray-500 text-xs whitespace-pre-line">
