@@ -104,7 +104,26 @@ export default function SettingsPage() {
             </div>
             <div>
               <label className="text-gray-400 text-xs mb-1 block">WhatsApp Number</label>
-              <input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="+1 555 000 0000" className="w-full bg-[#0a0f1e] border border-gray-700 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-[#4ade80] placeholder-gray-600" />
+              <div className="relative">
+                <input
+                  value={whatsapp}
+                  onChange={e => {
+                    const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                    let formatted = digits;
+                    if (digits.length >= 6) {
+                      formatted = `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+                    } else if (digits.length >= 3) {
+                      formatted = `(${digits.slice(0,3)}) ${digits.slice(3)}`;
+                    } else if (digits.length > 0) {
+                      formatted = `(${digits}`;
+                    }
+                    setWhatsapp(formatted);
+                  }}
+                  placeholder="(555) 000-0000"
+                  maxLength={14}
+                  className="w-full bg-[#0a0f1e] border border-gray-700 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-[#4ade80] placeholder-gray-600"
+                />
+              </div>
               <p className="text-gray-600 text-xs mt-1">WhatsApp integration coming soon</p>
             </div>
             <div>
