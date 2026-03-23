@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
   const supabase = createClient();
   const now = new Date();
-  const results = [];
+  const results: { email: string; emailNum: number; status: string; error?: string }[] = [];
 
   const { data: customers } = await supabase
     .from("customers")
