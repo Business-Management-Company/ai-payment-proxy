@@ -20,6 +20,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const supabase = createClient();
   const [ready, setReady] = useState(false);
   const [ok, setOk] = useState(false);
+  const [role, setRole] = useState<string>("");
 
   useEffect(() => {
     supabase.auth.onAuthStateChange((event, session) => {
@@ -32,6 +33,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         else { setReady(true); router.replace("/login"); }
       });
     }, 800);
+  }, []);
+
+  useEffect(() => {
+    async function loadRole() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("customers")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      setRole(data?.role || "");
+    }
+    void loadRole();
   }, []);
 
   async function signOut() {
@@ -47,7 +64,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <div className="w-64 bg-[#111827] border-r border-gray-800 p-6 flex flex-col">
         <div className="text-white font-bold text-lg mb-8">AI Payment Proxy</div>
         <nav className="space-y-1 flex-1">
-          {nav.map(item => (
+          {nav
+            .filter((item) => item.href !== "/admin" || role === "super_admin")
+            .map(item => (
             <a
               key={item.href}
               href={item.href}
