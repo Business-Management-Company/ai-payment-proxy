@@ -65,7 +65,7 @@ export default function HomePage() {
       {/* ── Hero ── */}
       <div className="max-w-4xl mx-auto px-8 py-28 text-center">
         <div className="inline-block bg-[#4ade80]/10 text-[#4ade80] text-sm px-3 py-1 rounded-full mb-6 border border-[#4ade80]/20">
-          Now in Private Beta
+          🚀 Now in Early Access
         </div>
         <h1 className="text-5xl font-bold mb-6 leading-tight">
           Give your AI agent a credit card.{" "}
@@ -166,32 +166,33 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── Waitlist ── */}
+      {/* ── Early Access CTA ── */}
       <div className="max-w-4xl mx-auto px-8 pb-28">
-        <div id="waitlist" className="bg-[#111827] border border-gray-800 rounded-2xl p-10 text-center">
-          <h2 className="text-2xl font-bold mb-2">Join the waitlist</h2>
-          <p className="text-gray-400 mb-6">Be first to get API access when we launch.</p>
-          {status === "done" ? (
-            <p className="text-[#4ade80] font-semibold">You&apos;re on the list! ✅</p>
-          ) : (
-            <form onSubmit={handleWaitlist} className="flex gap-3 max-w-md mx-auto">
-              <input
-                type="email"
-                required
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 bg-[#1a2235] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]"
-              />
-              <button
-                type="submit"
-                disabled={status === "loading"}
-                className="bg-[#4ade80] text-black px-6 py-3 rounded-lg font-semibold hover:bg-[#22c55e] transition-colors"
-              >
-                {status === "loading" ? "..." : "Join"}
-              </button>
-            </form>
-          )}
+        <div id="early-access" className="bg-[#111827] border border-[#4ade80]/30 rounded-2xl p-10 text-center">
+          <div className="inline-block bg-[#4ade80]/10 text-[#4ade80] text-xs px-3 py-1 rounded-full mb-4 border border-[#4ade80]/20">
+            Limited Early Access
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Start building today</h2>
+          <p className="text-gray-400 mb-8 max-w-md mx-auto">
+            Get your API key and give your AI agents the ability to pay — safely, instantly, with hard spending limits.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <a
+              href="/signup"
+              className="bg-[#4ade80] text-black px-8 py-3 rounded-lg font-semibold hover:bg-[#22c55e] transition-colors"
+            >
+              Get Early Access →
+            </a>
+            <a
+              href="https://t.me/AIpaymentproxybot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-gray-700 text-white px-8 py-3 rounded-lg hover:border-gray-500 transition-colors"
+            >
+              Try on Telegram first
+            </a>
+          </div>
+          <p className="text-gray-600 text-xs mt-4">No credit card required to start · Free tier available</p>
         </div>
       </div>
 
