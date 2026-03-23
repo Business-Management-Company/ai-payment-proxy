@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { lithic } from "@/lib/lithic";
+import { issueHighnoteCard, applyForHighnoteCardProduct, createHighnoteAccountHolder } from "@/lib/highnote";
 import crypto from "crypto";
 
 const PLAN_LIMITS: Record<string, number> = {
@@ -56,12 +56,38 @@ export async function POST(request: NextRequest) {
       // But warn the agent
     }
 
-    const lithicCard = await lithic.cards.create({
-      type: 'SINGLE_USE',
-      spend_limit: Math.round(limitFloat * 100),
-      spend_limit_duration: 'TRANSACTION',
+    // Get or create Highnote accountHolderId + applicationId for this customer
+    let { highnote_account_holder_id, highnote_application_id } = customer;
+
+    if (!highnote_account_holder_id) {
+      // Create AccountHolder — use placeholder KYC data for sandbox
+      // In production, collect real KYC during onboarding
+      highnote_account_holder_id = await createHighnoteAccountHolder({
+        givenName: (customer.name || 'AI').split(' ')[0],
+        familyName: (customer.name || 'Agent').split(' ')[1] || 'User',
+        email: customer.email,
+        phone: '2025550000',
+        streetAddress: '413 Independence Ave SE',
+        city: 'Washington',
+        state: 'DC',
+        postalCode: '20003',
+        dateOfBirth: '1990-01-01',
+        ssn: '111111111', // sandbox test SSN
+        ipAddress: '127.0.0.1',
+      });
+      await supabase.from('customers').update({ highnote_account_holder_id }).eq('id', customer.id);
+    }
+
+    if (!highnote_application_id) {
+      highnote_application_id = await applyForHighnoteCardProduct(highnote_account_holder_id, '127.0.0.1');
+      await supabase.from('customers').update({ highnote_application_id }).eq('id', customer.id);
+    }
+
+    // Issue the virtual card
+    const highnoteCard = await issueHighnoteCard({
+      applicationId: highnote_application_id,
+      externalId: `aipp-${customer.id}-${Date.now()}`,
       memo: label?.slice(0, 50) || 'AI Agent Card',
-      state: 'OPEN'
     });
 
     // Save to Supabase
@@ -70,7 +96,7 @@ export async function POST(request: NextRequest) {
       .insert({
         id: crypto.randomUUID(),
         customer_id:       customer.id,
-        stripe_card_id:    lithicCard.token,
+        stripe_card_id:    highnoteCard.id,
         label:             label || "",
         limit_usd: limitFloat,
         merchant_category: "all",
@@ -92,7 +118,7 @@ export async function POST(request: NextRequest) {
       warning,
       data: {
         id:            card.id,
-        stripe_card_id: lithicCard.token,
+        stripe_card_id: highnoteCard.id,
         label:         card.label,
         limit_usd:     card.limit_usd,
         status:        card.status,
