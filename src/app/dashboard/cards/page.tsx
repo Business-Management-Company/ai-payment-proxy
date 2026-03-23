@@ -36,7 +36,7 @@ export default function CardsPage() {
   const [view, setView] = useState<"list" | "board">("board");
   const [label, setLabel] = useState("");
   const [agent, setAgent] = useState("");
-  const [limit, setLimit] = useState("50");
+  const [limit, setLimit] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [warning, setWarning] = useState("");
@@ -76,7 +76,7 @@ export default function CardsPage() {
       }
       setLabel("");
       setAgent("");
-      setLimit("50");
+      setLimit("");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed");
     }

@@ -3,8 +3,10 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = "AI Payment Proxy <hello@aipaymentproxy.com>";
 
-export async function sendWelcomeEmail(email: string, name: string, apiKey: string, trialEndsAt: string) {
-  const firstName = (name.split(" ")[0] || "there").charAt(0).toUpperCase() + (name.split(" ")[0] || "there").slice(1).toLowerCase();
+const capitalize = (s: string) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s;
+
+export async function sendWelcomeEmail(email: string, name: string, rawKey: string, trialEndsAt: string) {
+  const firstName = capitalize(name.split(" ")[0] || "there");
   const trialDate = new Date(trialEndsAt).toLocaleDateString("en-US", { month: "long", day: "numeric" });
 
   return resend.emails.send({
@@ -24,14 +26,14 @@ export async function sendWelcomeEmail(email: string, name: string, apiKey: stri
 
   <div style="background:#111827;border:1px solid #374151;border-radius:12px;padding:24px;margin-bottom:32px;">
     <p style="color:#9ca3af;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 8px;">Your API Key</p>
-    <p style="color:#4ade80;font-family:monospace;font-size:14px;word-break:break-all;margin:0 0 16px;background:#0a0f1e;padding:12px;border-radius:8px;">${apiKey}</p>
+    <p style="color:#4ade80;font-family:monospace;font-size:14px;word-break:break-all;margin:0 0 16px;background:#0a0f1e;padding:12px;border-radius:8px;">${rawKey}</p>
     <p style="color:#6b7280;font-size:12px;margin:0;">⚠️ Save this key — it won't be shown again. Store it as an environment variable.</p>
   </div>
 
   <div style="background:#111827;border:1px solid #374151;border-radius:12px;padding:24px;margin-bottom:32px;">
     <p style="color:#ffffff;font-size:16px;font-weight:600;margin:0 0 16px;">Create your first card in 30 seconds:</p>
     <pre style="color:#4ade80;font-family:monospace;font-size:13px;background:#0a0f1e;padding:16px;border-radius:8px;overflow-x:auto;margin:0;">curl -X POST https://aipaymentproxy.com/api/v1/cards \
-  -H "Authorization: Bearer ${apiKey}" \
+  -H "Authorization: Bearer ${rawKey}" \
   -H "Content-Type: application/json" \
   -d '{"label":"My first card","limit_usd":10}'</pre>
   </div>
@@ -55,7 +57,7 @@ export async function sendWelcomeEmail(email: string, name: string, apiKey: stri
 }
 
 export async function sendFirstCardEmail(email: string, name: string) {
-  const firstName = name.split(" ")[0];
+  const firstName = capitalize(name.split(" ")[0] || "there");
   return resend.emails.send({
     from: FROM,
     to: email,
@@ -108,7 +110,6 @@ export async function sendFirstCardEmail(email: string, name: string) {
 }
 
 export async function sendUseCasesEmail(email: string, name: string) {
-  const firstName = name.split(" ")[0];
   return resend.emails.send({
     from: FROM,
     to: email,
@@ -148,7 +149,7 @@ export async function sendUseCasesEmail(email: string, name: string) {
 }
 
 export async function sendCheckInEmail(email: string, name: string) {
-  const firstName = name.split(" ")[0];
+  const firstName = capitalize(name.split(" ")[0] || "there");
   return resend.emails.send({
     from: FROM,
     to: email,
@@ -186,7 +187,6 @@ export async function sendCheckInEmail(email: string, name: string) {
 }
 
 export async function sendTrialEndingEmail(email: string, name: string, trialEndsAt: string, plan: string) {
-  const firstName = name.split(" ")[0];
   const trialDate = new Date(trialEndsAt).toLocaleDateString("en-US", { month: "long", day: "numeric" });
   const prices: Record<string, string> = { developer: "$29", growth: "$79", enterprise: "$499" };
   const price = prices[plan] || "$29";

@@ -3,11 +3,26 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+function isDuplicateEmailSignupError(error: { message: string }): boolean {
+  const m = error.message.toLowerCase();
+  return (
+    m.includes("already registered") ||
+    m.includes("already been registered") ||
+    m.includes("user already registered") ||
+    m.includes("email address is already") ||
+    m.includes("already exists") ||
+    m.includes("a user with this email address has already been") ||
+    m.includes("duplicate key value") ||
+    m.includes("unique violation")
+  );
+}
+
 export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [duplicateEmail, setDuplicateEmail] = useState(false);
   const [loading, setLoading] = useState(false);
   const [termsScrolled, setTermsScrolled] = useState(false);
   const [privacyScrolled, setPrivacyScrolled] = useState(false);
@@ -50,6 +65,7 @@ export default function SignupPage() {
     if (!canSubmit) return;
     setLoading(true);
     setError("");
+    setDuplicateEmail(false);
     const verifyRes = await fetch("/api/verify-turnstile", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -67,11 +83,8 @@ export default function SignupPage() {
       options: { data: { name, telegram } }
     });
     if (error) {
-      if (
-        error.message.includes("already registered") ||
-        error.message.includes("already been registered") ||
-        error.message.includes("User already registered")
-      ) {
+      if (isDuplicateEmailSignupError(error)) {
+        setDuplicateEmail(true);
         setError("An account with this email already exists. Please sign in instead.");
       } else if (error.message.includes("Password should be")) {
         setError("Password must be at least 8 characters.");
@@ -319,10 +332,10 @@ By checking the box below you confirm you have read and agree to our Privacy Pol
             </div>
           </div>
 
-          {error && error.includes("already exists") ? (
+          {duplicateEmail ? (
             <p className="text-red-400 text-sm">
-              An account with this email already exists.{" "}
-              <a href="/login" className="text-[#4ade80] hover:underline">Sign in instead →</a>
+              An account with this email already exists. Please{" "}
+              <a href="/login" className="text-[#4ade80] hover:underline">sign in instead</a>.
             </p>
           ) : (
             error && <p className="text-red-400 text-sm">{error}</p>
