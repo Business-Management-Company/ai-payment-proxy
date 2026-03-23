@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import crypto from "crypto";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 async function authenticateApiKey(request: NextRequest) {
   const auth = request.headers.get("authorization");
@@ -22,17 +19,19 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const supabase = createClient();
     const { data: card } = await supabase.from("virtual_cards").select("*").eq("id", params.id).eq("customer_id", customer.id).single();
     if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 });
-    const stripeCard = await stripe.issuing.cards.retrieve(card.stripe_card_id, { expand: ["number", "cvc"] });
+    const { lithic } = await import("@/lib/lithic");
+    const lithicCard = await lithic.cards.retrieve(card.stripe_card_id);
+    const pan = await lithic.cards.retrievePAN(card.stripe_card_id);
     return NextResponse.json({
       success: true,
       data: {
         id: card.id,
-        label: card.label,
-        number: (stripeCard as any).number,
-        cvc: (stripeCard as any).cvc,
-        exp_month: stripeCard.exp_month,
-        exp_year: stripeCard.exp_year,
+        number: pan.pan,
+        cvc: (lithicCard as any).cvv,
+        exp_month: (lithicCard as any).exp_month,
+        exp_year: (lithicCard as any).exp_year,
         limit_usd: card.limit_usd,
+        label: card.label,
         status: card.status,
       }
     });
@@ -48,7 +47,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const supabase = createClient();
     const { data: card } = await supabase.from("virtual_cards").select("*").eq("id", params.id).eq("customer_id", customer.id).single();
     if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 });
-    await stripe.issuing.cards.update(card.stripe_card_id, { status: "canceled" });
+    const { lithic } = await import("@/lib/lithic");
+    await lithic.cards.update(card.stripe_card_id, { state: "CLOSED" });
     await supabase.from("virtual_cards").update({ status: "canceled", canceled_at: new Date().toISOString() }).eq("id", params.id);
     return NextResponse.json({ success: true, message: "Card canceled" });
   } catch (error: unknown) {

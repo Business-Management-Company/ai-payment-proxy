@@ -26,30 +26,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Already onboarded" }, { status: 400 });
     }
 
-    // 1. Create Stripe Issuing cardholder (for virtual cards)
-    const cardholder = await stripe.issuing.cardholders.create({
-      name,
-      email,
-      type: "individual",
-      billing: {
-        address: {
-          line1: "123 Main St",
-          city: "San Francisco",
-          state: "CA",
-          postal_code: "94105",
-          country: "US",
-        },
-      },
-    });
-
-    // 2. Create Stripe Customer (for billing)
+    // 1. Create Stripe Customer (for billing)
     const customer = await stripe.customers.create({
       email,
       name,
       metadata: { userId },
     });
 
-    // 3. Create subscription with 14-day free trial
+    // 2. Create subscription with 14-day free trial
     const priceId = PLAN_PRICE_IDS[plan] || PLAN_PRICE_IDS.developer;
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
@@ -62,18 +46,17 @@ export async function POST(request: NextRequest) {
       ? new Date(subscription.trial_end * 1000).toISOString()
       : null;
 
-    // 4. Generate API key
+    // 3. Generate API key
     const rawKey = "aipp_live_" + crypto.randomBytes(16).toString("hex");
     const hash = crypto.createHash("sha256").update(rawKey).digest("hex");
     const prefix = rawKey.substring(0, 16);
 
-    // 5. Save everything to Supabase
+    // 4. Save everything to Supabase
     await supabase.from("customers").insert({
       id: userId,
       email,
       name,
       telegram_handle: telegram,
-      stripe_cardholder_id: cardholder.id,
       stripe_customer_id: customer.id,
       stripe_subscription_id: subscription.id,
       subscription_status: subscription.status,
@@ -98,7 +81,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       apiKey: rawKey,
       prefix,
-      stripeCardholderId: cardholder.id,
       stripeCustomerId: customer.id,
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,

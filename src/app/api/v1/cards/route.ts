@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import crypto from "crypto";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 const PLAN_LIMITS: Record<string, number> = {
   developer:  50,
@@ -35,7 +32,7 @@ async function authenticateApiKey(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const customer = await authenticateApiKey(request);
-    const { label, limit_usd, merchant_category } = await request.json();
+    const { label, limit_usd } = await request.json();
     const limitFloat = parseFloat(limit_usd);
 
     if (!limitFloat || limitFloat < 0.50) {
@@ -58,28 +55,25 @@ export async function POST(request: NextRequest) {
       // But warn the agent
     }
 
-    // Create Stripe Issuing card
-    const cardParams: Stripe.Issuing.CardCreateParams = {
-      cardholder: customer.stripe_cardholder_id,
-      currency:   "usd",
-      type:       "virtual",
-      spending_controls: {
-        spending_limits: [{ amount: Math.round(limitFloat * 100), interval: "per_authorization" }],
-        ...(merchant_category ? { allowed_categories: [merchant_category] } : {}),
-      },
-    };
-
-    const stripeCard = await stripe.issuing.cards.create(cardParams);
+    const { lithic } = await import("@/lib/lithic");
+    const lithicCard = await lithic.cards.create({
+      type: "SINGLE_USE",
+      spend_limit: Math.round(limitFloat * 100),
+      spend_limit_duration: "TRANSACTION",
+      memo: label?.slice(0, 50) || "AI Agent Card",
+      state: "OPEN",
+    });
 
     // Save to Supabase
     const { data: card, error: insertError } = await supabase
       .from("virtual_cards")
       .insert({
+        id: crypto.randomUUID(),
         customer_id:       customer.id,
-        stripe_card_id:    stripeCard.id,
+        stripe_card_id:    lithicCard.token,
         label:             label || "",
         limit_usd: limitFloat,
-        merchant_category: merchant_category || "all",
+        merchant_category: "all",
         status:            "active",
       })
       .select()
@@ -98,7 +92,7 @@ export async function POST(request: NextRequest) {
       warning,
       data: {
         id:            card.id,
-        stripe_card_id: stripeCard.id,
+        stripe_card_id: lithicCard.token,
         label:         card.label,
         limit_usd:     card.limit_usd,
         status:        card.status,

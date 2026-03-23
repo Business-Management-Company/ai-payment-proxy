@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,20 +43,20 @@ export async function POST(request: NextRequest) {
       ? "Balance is insufficient to fund this card. Add funds to activate it."
       : undefined;
 
-    const stripeCard = await stripe.issuing.cards.create({
-      cardholder: customer.stripe_cardholder_id,
-      currency: "usd",
-      type: "virtual",
-      spending_controls: {
-        spending_limits: [{ amount: Math.round(limitFloat * 100), interval: "per_authorization" }],
-      },
+    const { lithic } = await import("@/lib/lithic");
+    const lithicCard = await lithic.cards.create({
+      type: "SINGLE_USE",
+      spend_limit: Math.round(limitFloat * 100),
+      spend_limit_duration: "TRANSACTION",
+      memo: label?.slice(0, 50) || "AI Agent Card",
+      state: "OPEN",
     });
 
     const { data: card, error: insertError } = await supabase
       .from("virtual_cards")
       .insert({
         customer_id: customer.id,
-        stripe_card_id: stripeCard.id,
+        stripe_card_id: lithicCard.token,
         label: label || "",
         limit_usd: limitFloat,
         merchant_category: "all",
