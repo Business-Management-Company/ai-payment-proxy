@@ -1,6 +1,6 @@
 const HIGHNOTE_API_URL = process.env.HIGHNOTE_ENV === 'production'
-  ? 'https://api.highnote.com/graphql'
-  : 'https://api.sandbox.highnote.com/graphql';
+  ? 'https://api.us.highnote.com/graphql'
+  : 'https://api.us.test.highnote.com/graphql';
 
 export async function createHighnoteCard(limitCents: number, memo: string) {
   const query = `
