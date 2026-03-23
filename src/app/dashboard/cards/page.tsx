@@ -12,41 +12,14 @@ interface Card {
   stripe_card_id: string;
 }
 
-const SAMPLE_CURL = `curl -X POST https://aipaymentproxy.com/api/v1/cards \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"label":"Shopping Agent","limit_usd":50}'`;
-
 function EmptyState({ onCreateClick }: { onCreateClick: () => void }) {
-  const [copied, setCopied] = useState(false);
-  function copy() {
-    navigator.clipboard.writeText(SAMPLE_CURL);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
   return (
     <div className="col-span-3 flex flex-col items-center justify-center py-20 text-center">
       <div className="text-5xl mb-5">💳</div>
       <h3 className="text-white text-xl font-bold mb-2">No virtual cards yet</h3>
       <p className="text-gray-400 text-sm mb-8 max-w-sm">
-        Create your first card from the UI — or call the API directly from your AI agent.
+        Create your first card using the form above, or via the API.
       </p>
-
-      <div className="w-full max-w-xl bg-[#0a0f1e] border border-gray-700 rounded-xl overflow-hidden mb-6 text-left">
-        <div className="flex items-center justify-between px-4 py-2 border-b border-gray-700 bg-[#111827]">
-          <span className="text-gray-400 text-xs font-mono">Quick start — create a card via API</span>
-          <button
-            onClick={copy}
-            className="text-xs text-gray-400 hover:text-white transition-colors px-2 py-1 rounded bg-gray-800 hover:bg-gray-700"
-          >
-            {copied ? "✅ Copied!" : "Copy"}
-          </button>
-        </div>
-        <p className="text-gray-500 text-xs mb-2 px-5 pt-3">
-          Need your API key? <a href="/dashboard/api-keys" className="text-[#4ade80] hover:underline">Get it here →</a>
-        </p>
-        <pre className="text-[#4ade80] text-xs font-mono px-5 py-4 leading-relaxed overflow-x-auto whitespace-pre">{SAMPLE_CURL}</pre>
-      </div>
 
       <button
         onClick={onCreateClick}
@@ -61,13 +34,10 @@ function EmptyState({ onCreateClick }: { onCreateClick: () => void }) {
 export default function CardsPage() {
   const [cards, setCards] = useState<Card[]>([]);
   const [view, setView] = useState<"list" | "board">("board");
-  const [showForm, setShowForm] = useState(false);
   const [label, setLabel] = useState("");
-  const [agent, setAgent] = useState("");
   const [limit, setLimit] = useState("50");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [apiKey, setApiKey] = useState("");
   const supabase = createClient();
 
   useEffect(() => {
@@ -86,20 +56,19 @@ export default function CardsPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!apiKey) { setError("Enter your API key"); return; }
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/v1/cards", {
+      const res = await fetch("/api/dashboard/cards", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
-        body: JSON.stringify({ label: label + (agent ? " (" + agent + ")" : ""), limit_usd: Number(limit) }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label, limit_usd: Number(limit) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setCards(prev => [data.data, ...prev]);
-      setShowForm(false);
-      setLabel(""); setAgent(""); setLimit("50"); setApiKey("");
+      setLabel("");
+      setLimit("50");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed");
     }
@@ -121,33 +90,25 @@ export default function CardsPage() {
               className={`px-4 py-2 text-sm transition ${view === "list" ? "bg-[#4ade80] text-black font-semibold" : "text-gray-400 hover:text-white"}`}
             >List</button>
           </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-[#4ade80] text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-[#22c55e]"
-          >+ New Card</button>
         </div>
       </div>
 
-      {showForm && (
-        <div className="bg-[#111827] border border-gray-800 rounded-xl p-6 mb-6">
-          <h3 className="text-white font-semibold mb-4">Create Virtual Card</h3>
-          <form onSubmit={handleCreate} className="grid grid-cols-2 gap-4">
-            <input type="text" placeholder="Card label (e.g. Shopping)" value={label} onChange={e => setLabel(e.target.value)} required className="bg-[#1a2235] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]" />
-            <input type="text" placeholder="Agent name (e.g. Shopping Agent)" value={agent} onChange={e => setAgent(e.target.value)} className="bg-[#1a2235] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]" />
-            <input type="number" placeholder="Spending limit (USD)" value={limit} onChange={e => setLimit(e.target.value)} min="1" max="50000" required className="bg-[#1a2235] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]" />
-            <input type="text" placeholder="Your API key (aipp_live_...)" value={apiKey} onChange={e => setApiKey(e.target.value)} required className="bg-[#1a2235] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]" />
-            <div className="col-span-2 flex gap-3 items-center">
-              <button type="submit" disabled={loading} className="bg-[#4ade80] text-black px-6 py-3 rounded-lg font-semibold hover:bg-[#22c55e] disabled:opacity-50">{loading ? "Creating..." : "Create Card"}</button>
-              {error && <p className="text-red-400 text-sm">{error}</p>}
-            </div>
-          </form>
-        </div>
-      )}
+      <div id="create-card-form" className="bg-[#111827] border border-gray-800 rounded-xl p-6 mb-6">
+        <h3 className="text-white font-semibold mb-4">Create Virtual Card</h3>
+        <form onSubmit={handleCreate} className="grid grid-cols-2 gap-4">
+          <input type="text" placeholder="e.g. DoorDash order, Amazon purchase" value={label} onChange={e => setLabel(e.target.value)} required className="bg-[#1a2235] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]" />
+          <input type="number" placeholder="Spending limit in USD (e.g. 25)" value={limit} onChange={e => setLimit(e.target.value)} min="1" max="50000" required className="bg-[#1a2235] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]" />
+          <div className="col-span-2 flex gap-3 items-center">
+            <button type="submit" disabled={loading} className="bg-[#4ade80] text-black px-6 py-3 rounded-lg font-semibold hover:bg-[#22c55e] disabled:opacity-50">{loading ? "Creating..." : "Create Card"}</button>
+            {error && <p className="text-red-400 text-sm">{error}</p>}
+          </div>
+        </form>
+      </div>
 
       {view === "board" ? (
         <div className="grid grid-cols-3 gap-4">
           {cards.length === 0
-            ? <EmptyState onCreateClick={() => { setShowForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
+            ? <EmptyState onCreateClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
             : cards.map(card => (
               <div key={card.id} className="bg-gradient-to-br from-[#1a2235] to-[#0a0f1e] border border-gray-700 rounded-2xl p-6 relative overflow-hidden">
                 <div className="flex justify-between items-start mb-8">
@@ -185,7 +146,7 @@ export default function CardsPage() {
               {cards.length === 0 ? (
                 <tr>
                   <td colSpan={5}>
-                    <EmptyState onCreateClick={() => { setShowForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
+                    <EmptyState onCreateClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
                   </td>
                 </tr>
               ) : cards.map(card => (
