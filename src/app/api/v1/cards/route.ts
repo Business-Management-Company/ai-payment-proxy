@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { lithic } from "@/lib/lithic";
 import crypto from "crypto";
 
 const PLAN_LIMITS: Record<string, number> = {
@@ -55,13 +56,12 @@ export async function POST(request: NextRequest) {
       // But warn the agent
     }
 
-    const { lithic } = await import("@/lib/lithic");
     const lithicCard = await lithic.cards.create({
-      type: "SINGLE_USE",
+      type: 'SINGLE_USE',
       spend_limit: Math.round(limitFloat * 100),
-      spend_limit_duration: "TRANSACTION",
-      memo: label?.slice(0, 50) || "AI Agent Card",
-      state: "OPEN",
+      spend_limit_duration: 'TRANSACTION',
+      memo: label?.slice(0, 50) || 'AI Agent Card',
+      state: 'OPEN'
     });
 
     // Save to Supabase

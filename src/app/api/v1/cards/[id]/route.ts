@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { lithic } from "@/lib/lithic";
 import crypto from "crypto";
 
 async function authenticateApiKey(request: NextRequest) {
@@ -19,9 +20,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const supabase = createClient();
     const { data: card } = await supabase.from("virtual_cards").select("*").eq("id", params.id).eq("customer_id", customer.id).single();
     if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 });
-    const { lithic } = await import("@/lib/lithic");
-    const lithicCard = await lithic.cards.retrieve(card.stripe_card_id);
-    const pan = await lithic.cards.retrievePAN(card.stripe_card_id);
+    const cardToken = card.stripe_card_id;
+    const lithicCard = await lithic.cards.retrieve(cardToken);
+    const pan = await lithic.cards.retrievePAN(cardToken);
     return NextResponse.json({
       success: true,
       data: {
@@ -47,7 +48,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const supabase = createClient();
     const { data: card } = await supabase.from("virtual_cards").select("*").eq("id", params.id).eq("customer_id", customer.id).single();
     if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 });
-    const { lithic } = await import("@/lib/lithic");
     await lithic.cards.update(card.stripe_card_id, { state: "CLOSED" });
     await supabase.from("virtual_cards").update({ status: "canceled", canceled_at: new Date().toISOString() }).eq("id", params.id);
     return NextResponse.json({ success: true, message: "Card canceled" });
