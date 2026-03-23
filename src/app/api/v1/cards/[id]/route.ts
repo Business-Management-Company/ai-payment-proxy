@@ -22,15 +22,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 });
     const cardToken = card.stripe_card_id;
     const lithicCard = await lithic.cards.retrieve(cardToken);
-    const pan = await lithic.cards.retrievePAN(cardToken);
     return NextResponse.json({
       success: true,
       data: {
         id: card.id,
-        number: pan.pan,
+        number: (lithicCard as any).pan,
         cvc: (lithicCard as any).cvv,
         exp_month: (lithicCard as any).exp_month,
         exp_year: (lithicCard as any).exp_year,
+        expiry: `${(lithicCard as any).exp_month}/${(lithicCard as any).exp_year}`,
         limit_usd: card.limit_usd,
         label: card.label,
         status: card.status,
