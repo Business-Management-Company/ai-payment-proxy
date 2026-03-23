@@ -21,6 +21,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [ok, setOk] = useState(false);
   const [role, setRole] = useState<string>("");
+  const [contentVisible, setContentVisible] = useState(false);
 
   useEffect(() => {
     supabase.auth.onAuthStateChange((event, session) => {
@@ -50,6 +51,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     }
     void loadRole();
   }, []);
+
+  useEffect(() => {
+    setContentVisible(false);
+    const id = requestAnimationFrame(() => setContentVisible(true));
+    return () => cancelAnimationFrame(id);
+  }, [pathname]);
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -82,7 +89,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           Sign Out
         </button>
       </div>
-      <div className="flex-1 p-8">{children}</div>
+      <div className="flex-1 p-8">
+        <div
+          key={pathname}
+          className={`transition-all duration-200 ${
+            contentVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+          }`}
+        >
+          {children}
+        </div>
+      </div>
     </div>
   );
 }

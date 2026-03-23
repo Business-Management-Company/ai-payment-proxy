@@ -9,12 +9,8 @@ export default function SettingsPage() {
   const [telegram, setTelegram] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [slack, setSlack] = useState("");
-  const [apiKeyPrefix, setApiKeyPrefix] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [rotating, setRotating] = useState(false);
-  const [newKey, setNewKey] = useState("");
-  const [confirmRotate, setConfirmRotate] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -33,7 +29,6 @@ export default function SettingsPage() {
         setTelegram(cust.telegram_handle || "");
         setWhatsapp(cust.whatsapp_number || "");
         setSlack(cust.slack_handle || "");
-        setApiKeyPrefix(cust.api_key_prefix || "");
       }
     }
     load();
@@ -60,18 +55,6 @@ export default function SettingsPage() {
       setTimeout(() => setSaved(false), 2000);
     }
     setSaving(false);
-  }
-
-  async function rotateKey() {
-    setRotating(true);
-    const res = await fetch("/api/rotate-key", { method: "POST" });
-    const data = await res.json();
-    if (data.apiKey) {
-      setNewKey(data.apiKey);
-      setApiKeyPrefix(data.prefix);
-    }
-    setRotating(false);
-    setConfirmRotate(false);
   }
 
   return (
@@ -151,40 +134,6 @@ export default function SettingsPage() {
         >
           {saving ? "Saving..." : saved ? "✅ Saved!" : "Save Changes"}
         </button>
-
-        <div className="bg-[#111827] border border-gray-800 rounded-xl p-6">
-          <h3 className="text-white font-semibold mb-1">API Key</h3>
-          <p className="text-gray-500 text-xs mb-4">Your API key prefix — the full key is only shown when created or rotated</p>
-          <div className="bg-[#0a0f1e] border border-gray-800 rounded-lg px-4 py-3 font-mono text-[#4ade80] text-sm mb-4">
-            {apiKeyPrefix}••••••••••••••••••••••
-          </div>
-
-          {newKey && (
-            <div className="bg-[#4ade80]/10 border border-[#4ade80]/30 rounded-xl p-4 mb-4">
-              <p className="text-[#4ade80] text-xs font-semibold mb-2">⚠️ New API key — save this now, it will never be shown again:</p>
-              <div className="bg-[#0a0f1e] rounded-lg px-4 py-3 font-mono text-[#4ade80] text-xs break-all">{newKey}</div>
-              <button onClick={() => navigator.clipboard.writeText(newKey)} className="mt-2 text-xs text-[#4ade80] hover:underline">Copy to clipboard</button>
-            </div>
-          )}
-
-          {!confirmRotate ? (
-            <button onClick={() => setConfirmRotate(true)} className="border border-amber-500/30 text-amber-400 px-4 py-2 rounded-lg text-sm hover:bg-amber-500/10 transition-colors">
-              Rotate API Key
-            </button>
-          ) : (
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
-              <p className="text-amber-400 text-sm mb-3">This will invalidate your current key immediately. Any agents using the old key will stop working.</p>
-              <div className="flex gap-3">
-                <button onClick={rotateKey} disabled={rotating} className="bg-amber-500 text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-amber-400 disabled:opacity-50">
-                  {rotating ? "Rotating..." : "Yes, rotate key"}
-                </button>
-                <button onClick={() => setConfirmRotate(false)} className="border border-gray-700 text-gray-400 px-4 py-2 rounded-lg text-sm hover:text-white">
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
 
       </div>
     </div>
