@@ -62,6 +62,16 @@ export default function ChatWidget() {
     setLoading(false);
   }
 
+  function renderMessage(content: string) {
+    const parts = content.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return <strong key={i} className="font-semibold text-white">{part.slice(2, -2)}</strong>;
+      }
+      return <span key={i}>{part}</span>;
+    });
+  }
+
   return (
     <>
       <button
@@ -94,7 +104,7 @@ export default function ChatWidget() {
                     ? "bg-[#4ade80] text-black rounded-br-sm"
                     : "bg-[#1a2235] text-gray-300 rounded-bl-sm"
                 }`}>
-                  <pre className="whitespace-pre-wrap font-sans">{msg.content}</pre>
+                  <p className="whitespace-pre-wrap leading-relaxed">{renderMessage(msg.content)}</p>
                 </div>
               </div>
             ))}

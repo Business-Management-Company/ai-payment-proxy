@@ -2,142 +2,165 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type Customer = {
-  name: string;
-  email: string;
-  plan: string;
-  api_key_prefix: string | null;
-};
-
-export default function Page() {
-  const [customer, setCustomer] = useState<Customer | null>(null);
-  const [showConfirm, setShowConfirm] = useState(false);
+export default function SettingsPage() {
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [company, setCompany] = useState("");
+  const [telegram, setTelegram] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [slack, setSlack] = useState("");
+  const [apiKeyPrefix, setApiKeyPrefix] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [rotating, setRotating] = useState(false);
-  const [newKey, setNewKey] = useState<string | null>(null);
-  const [rotateError, setRotateError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [newKey, setNewKey] = useState("");
+  const [confirmRotate, setConfirmRotate] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) {
-        supabase
-          .from("customers")
-          .select("*")
-          .eq("id", data.user.id)
-          .single()
-          .then(({ data: d }) => setCustomer(d as Customer));
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setEmail(user.email || "");
+      const { data: cust } = await supabase
+        .from("customers")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+      if (cust) {
+        setName(cust.name || "");
+        setCompany(cust.company_name || "");
+        setTelegram(cust.telegram_handle || "");
+        setWhatsapp(cust.whatsapp_number || "");
+        setSlack(cust.slack_handle || "");
+        setApiKeyPrefix(cust.api_key_prefix || "");
       }
-    });
+    }
+    load();
   }, []);
 
-  async function confirmRotate() {
-    setShowConfirm(false);
-    setRotateError(null);
-    setRotating(true);
-    try {
-      const res = await fetch("/api/rotate-key", { method: "POST" });
-      const body = await res.json();
-      if (!res.ok) {
-        setRotateError(body.error || "Rotation failed");
-        return;
-      }
-      setNewKey(body.apiKey);
-      if (body.prefix) {
-        setCustomer((c) => (c ? { ...c, api_key_prefix: body.prefix } : c));
-      }
-    } catch {
-      setRotateError("Network error");
-    } finally {
-      setRotating(false);
-    }
+  async function saveProfile() {
+    setSaving(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from("customers").update({
+      name,
+      company_name: company,
+      telegram_handle: telegram,
+      whatsapp_number: whatsapp,
+      slack_handle: slack,
+    }).eq("id", user.id);
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   }
 
-  function copyKey() {
-    if (!newKey) return;
-    navigator.clipboard.writeText(newKey);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  async function rotateKey() {
+    setRotating(true);
+    const res = await fetch("/api/rotate-key", { method: "POST" });
+    const data = await res.json();
+    if (data.apiKey) {
+      setNewKey(data.apiKey);
+      setApiKeyPrefix(data.prefix);
+    }
+    setRotating(false);
+    setConfirmRotate(false);
   }
 
   return (
-    <div>
+    <div className="max-w-2xl">
       <h2 className="text-white text-2xl font-bold mb-8">Settings</h2>
+      <div className="space-y-6">
 
-      <div className="bg-[#111827] border border-gray-800 rounded-xl p-6 max-w-md mb-6">
-        <p className="text-gray-400 text-sm">Email</p>
-        <p className="text-white mb-4">{customer?.email}</p>
-        <p className="text-gray-400 text-sm">Plan</p>
-        <p className="text-white capitalize">{customer?.plan}</p>
-      </div>
-
-      <div className="bg-[#111827] border border-gray-800 rounded-xl p-6 max-w-lg">
-        <h3 className="text-white font-semibold mb-2">API key</h3>
-        <p className="text-gray-400 text-sm mb-4">
-          Your API key prefix (the full secret is only shown when you create or rotate the key):
-        </p>
-        <div className="font-mono text-[#4ade80] bg-[#0a0f1e] rounded-lg px-3 py-2 text-sm mb-6 border border-gray-800">
-          {customer?.api_key_prefix ? `${customer.api_key_prefix}••••••••••••••••••••` : "Loading..."}
+        <div className="bg-[#111827] border border-gray-800 rounded-xl p-6">
+          <h3 className="text-white font-semibold mb-4">Profile</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="text-gray-400 text-xs mb-1 block">Email</label>
+              <input value={email} disabled className="w-full bg-[#0a0f1e] border border-gray-800 rounded-lg px-4 py-3 text-gray-500 text-sm cursor-not-allowed" />
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs mb-1 block">Full Name</label>
+              <input value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#0a0f1e] border border-gray-700 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-[#4ade80]" />
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs mb-1 block">Company Name</label>
+              <input value={company} onChange={e => setCompany(e.target.value)} placeholder="Your company or project name" className="w-full bg-[#0a0f1e] border border-gray-700 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-[#4ade80] placeholder-gray-600" />
+            </div>
+          </div>
         </div>
 
-        <p className="text-amber-400/90 text-xs mb-3">
-          This will invalidate your current key immediately. Any clients using the old key will stop working until you update them.
-        </p>
+        <div className="bg-[#111827] border border-gray-800 rounded-xl p-6">
+          <h3 className="text-white font-semibold mb-1">Messaging & Notifications</h3>
+          <p className="text-gray-500 text-xs mb-4">Connect your messaging accounts to receive card alerts and updates</p>
+          <div className="space-y-4">
+            <div>
+              <label className="text-gray-400 text-xs mb-1 block">Telegram Username</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">@</span>
+                <input value={telegram} onChange={e => setTelegram(e.target.value.replace("@", ""))} placeholder="yourusername" className="w-full bg-[#0a0f1e] border border-gray-700 rounded-lg pl-8 pr-4 py-3 text-white text-sm focus:outline-none focus:border-[#4ade80] placeholder-gray-600" />
+              </div>
+              <p className="text-gray-600 text-xs mt-1">Get card alerts via @AIpaymentproxybot</p>
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs mb-1 block">WhatsApp Number</label>
+              <input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="+1 555 000 0000" className="w-full bg-[#0a0f1e] border border-gray-700 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-[#4ade80] placeholder-gray-600" />
+              <p className="text-gray-600 text-xs mt-1">WhatsApp integration coming soon</p>
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs mb-1 block">Slack Handle</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">@</span>
+                <input value={slack} onChange={e => setSlack(e.target.value.replace("@", ""))} placeholder="yourslackhandle" className="w-full bg-[#0a0f1e] border border-gray-700 rounded-lg pl-8 pr-4 py-3 text-white text-sm focus:outline-none focus:border-[#4ade80] placeholder-gray-600" />
+              </div>
+              <p className="text-gray-600 text-xs mt-1">Slack integration coming soon</p>
+            </div>
+          </div>
+        </div>
+
         <button
-          type="button"
-          onClick={() => setShowConfirm(true)}
-          disabled={rotating || !customer}
-          className="bg-amber-500/15 border border-amber-500/40 text-amber-400 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-amber-500/25 disabled:opacity-50 transition-colors"
+          onClick={saveProfile}
+          disabled={saving}
+          className="bg-[#4ade80] text-black px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#22c55e] disabled:opacity-50 transition-colors"
         >
-          {rotating ? "Rotating…" : "Rotate API Key"}
+          {saving ? "Saving..." : saved ? "✅ Saved!" : "Save Changes"}
         </button>
-        {rotateError && <p className="text-red-400 text-sm mt-3">{rotateError}</p>}
-      </div>
 
-      {newKey && (
-        <div className="mt-6 bg-[#111827] border border-[#4ade80]/30 rounded-xl p-6 max-w-lg">
-          <p className="text-amber-400 text-sm font-semibold mb-2">Save this key now — it will never be shown again</p>
-          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-            <div className="flex-1 font-mono text-sm text-white bg-[#0a0f1e] border border-[#4ade80]/20 rounded-lg px-3 py-2 break-all">
-              {newKey}
+        <div className="bg-[#111827] border border-gray-800 rounded-xl p-6">
+          <h3 className="text-white font-semibold mb-1">API Key</h3>
+          <p className="text-gray-500 text-xs mb-4">Your API key prefix — the full key is only shown when created or rotated</p>
+          <div className="bg-[#0a0f1e] border border-gray-800 rounded-lg px-4 py-3 font-mono text-[#4ade80] text-sm mb-4">
+            {apiKeyPrefix}••••••••••••••••••••••
+          </div>
+
+          {newKey && (
+            <div className="bg-[#4ade80]/10 border border-[#4ade80]/30 rounded-xl p-4 mb-4">
+              <p className="text-[#4ade80] text-xs font-semibold mb-2">⚠️ New API key — save this now, it will never be shown again:</p>
+              <div className="bg-[#0a0f1e] rounded-lg px-4 py-3 font-mono text-[#4ade80] text-xs break-all">{newKey}</div>
+              <button onClick={() => navigator.clipboard.writeText(newKey)} className="mt-2 text-xs text-[#4ade80] hover:underline">Copy to clipboard</button>
             </div>
-            <button
-              type="button"
-              onClick={copyKey}
-              className="shrink-0 bg-[#4ade80] text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#22c55e] transition-colors"
-            >
-              {copied ? "Copied!" : "Copy"}
+          )}
+
+          {!confirmRotate ? (
+            <button onClick={() => setConfirmRotate(true)} className="border border-amber-500/30 text-amber-400 px-4 py-2 rounded-lg text-sm hover:bg-amber-500/10 transition-colors">
+              Rotate API Key
             </button>
-          </div>
-        </div>
-      )}
-
-      {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#111827] border border-gray-700 rounded-xl p-6 max-w-md w-full shadow-xl">
-            <h4 className="text-white font-semibold text-lg mb-2">Rotate API key?</h4>
-            <p className="text-gray-400 text-sm mb-6">
-              This will invalidate your current key immediately. You must update any integrations, agents, or scripts to use the new key.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => setShowConfirm(false)}
-                className="text-gray-400 hover:text-white text-sm px-4 py-2 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmRotate}
-                className="bg-amber-500/20 border border-amber-500/50 text-amber-400 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-amber-500/30 transition-colors"
-              >
-                Yes, rotate key
-              </button>
+          ) : (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
+              <p className="text-amber-400 text-sm mb-3">This will invalidate your current key immediately. Any agents using the old key will stop working.</p>
+              <div className="flex gap-3">
+                <button onClick={rotateKey} disabled={rotating} className="bg-amber-500 text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-amber-400 disabled:opacity-50">
+                  {rotating ? "Rotating..." : "Yes, rotate key"}
+                </button>
+                <button onClick={() => setConfirmRotate(false)} className="border border-gray-700 text-gray-400 px-4 py-2 rounded-lg text-sm hover:text-white">
+                  Cancel
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
-      )}
+
+      </div>
     </div>
   );
 }
