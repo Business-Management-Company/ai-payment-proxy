@@ -42,6 +42,9 @@ function EmptyState({ onCreateClick }: { onCreateClick: () => void }) {
             {copied ? "✅ Copied!" : "Copy"}
           </button>
         </div>
+        <p className="text-gray-500 text-xs mb-2 px-5 pt-3">
+          Need your API key? <a href="/dashboard/api-keys" className="text-[#4ade80] hover:underline">Get it here →</a>
+        </p>
         <pre className="text-[#4ade80] text-xs font-mono px-5 py-4 leading-relaxed overflow-x-auto whitespace-pre">{SAMPLE_CURL}</pre>
       </div>
 

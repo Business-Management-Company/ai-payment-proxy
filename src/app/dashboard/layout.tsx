@@ -51,6 +51,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <a
               key={item.href}
               href={item.href}
+              target={item.href === "/kb" ? "_blank" : undefined}
+              rel={item.href === "/kb" ? "noopener noreferrer" : undefined}
               className={"block px-3 py-2 rounded-lg text-sm transition " + (pathname === item.href ? "text-[#4ade80] bg-[#4ade80]/10 font-medium" : "text-gray-400 hover:text-white hover:bg-[#1a2235]")}
             >
               {item.label}

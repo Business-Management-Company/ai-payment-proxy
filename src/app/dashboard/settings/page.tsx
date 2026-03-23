@@ -42,17 +42,24 @@ export default function SettingsPage() {
   async function saveProfile() {
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    await supabase.from("customers").update({
+    if (!user) { setSaving(false); return; }
+
+    const { error } = await supabase.from("customers").update({
       name,
       company_name: company,
       telegram_handle: telegram,
       whatsapp_number: whatsapp,
       slack_handle: slack,
     }).eq("id", user.id);
+
+    if (error) {
+      console.error("Save error:", error);
+      alert("Save failed: " + error.message);
+    } else {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   }
 
   async function rotateKey() {
