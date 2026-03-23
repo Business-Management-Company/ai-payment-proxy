@@ -44,7 +44,7 @@ export default function HomePage() {
           <span>AI Payment Proxy</span>
         </a>
         <div className="flex items-center gap-6">
-          <a href="/docs"        className="text-gray-400 hover:text-white text-sm transition-colors">Docs</a>
+          <a href="/docs"        className="text-gray-400 hover:text-white text-sm transition-colors">API Docs</a>
           <a href="/pricing"     className="text-gray-400 hover:text-white text-sm transition-colors">Pricing</a>
           <div className="relative group">
             <button type="button" className="text-gray-400 hover:text-white text-sm transition-colors flex items-center gap-1">
@@ -54,7 +54,6 @@ export default function HomePage() {
               <a href="/kb"           className="block px-4 py-3 text-gray-400 hover:text-white hover:bg-[#1a2235] text-sm transition-colors">📚 Help Center</a>
               <a href="/blog"         className="block px-4 py-3 text-gray-400 hover:text-white hover:bg-[#1a2235] text-sm transition-colors">✍️ Blog</a>
               <a href="/integrations" className="block px-4 py-3 text-gray-400 hover:text-white hover:bg-[#1a2235] text-sm transition-colors">🔌 Integrations</a>
-              <a href="/docs"         className="block px-4 py-3 text-gray-400 hover:text-white hover:bg-[#1a2235] text-sm transition-colors">📡 API Docs</a>
             </div>
           </div>
           <a href="/#use-cases" className="text-gray-400 hover:text-white text-sm transition-colors">Use Cases</a>
