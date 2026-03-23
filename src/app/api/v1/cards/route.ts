@@ -44,22 +44,9 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient();
     const currentBalance = customer.balance_usd || 0;
-
-    // Check sufficient balance
-    if (currentBalance < limitFloat) {
-      return NextResponse.json({
-        error: "Insufficient balance",
-        code: "insufficient_balance",
-        balance_usd: currentBalance,
-        required_usd: limitFloat,
-        shortfall_usd: +(limitFloat - currentBalance).toFixed(2),
-        action: "Add funds at https://aipaymentproxy.com/dashboard",
-        add_funds_url: "https://aipaymentproxy.com/dashboard",
-        tip: currentBalance > 0
-          ? `You have $${currentBalance} available. Deposit at least $${+(limitFloat - currentBalance).toFixed(2)} more to create this card.`
-          : "Your balance is $0. Add funds via ACH (free) or card at aipaymentproxy.com/dashboard",
-      }, { status: 402 });
-    }
+    const warning = currentBalance < limitFloat
+      ? "Balance is insufficient to fund this card. Add funds to activate it."
+      : undefined;
 
     // Check plan limits — allow overage, just flag it
     const planLimit = PLAN_LIMITS[customer.plan] || 50;
@@ -108,6 +95,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      warning,
       data: {
         id:            card.id,
         stripe_card_id: stripeCard.id,

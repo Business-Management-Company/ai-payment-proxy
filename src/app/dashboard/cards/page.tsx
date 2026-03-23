@@ -35,9 +35,11 @@ export default function CardsPage() {
   const [cards, setCards] = useState<Card[]>([]);
   const [view, setView] = useState<"list" | "board">("board");
   const [label, setLabel] = useState("");
+  const [agent, setAgent] = useState("");
   const [limit, setLimit] = useState("50");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [warning, setWarning] = useState("");
   const supabase = createClient();
 
   useEffect(() => {
@@ -58,16 +60,22 @@ export default function CardsPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setWarning("");
     try {
+      const fullLabel = agent ? `${label} — ${agent}` : label;
       const res = await fetch("/api/dashboard/cards", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label, limit_usd: Number(limit) }),
+        body: JSON.stringify({ label: fullLabel, limit_usd: Number(limit) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setCards(prev => [data.data, ...prev]);
+      if (data.warning) {
+        setWarning("⚠️ Card created but your balance is $0. Add funds in your dashboard to use this card.");
+      }
       setLabel("");
+      setAgent("");
       setLimit("50");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed");
@@ -95,10 +103,22 @@ export default function CardsPage() {
 
       <div id="create-card-form" className="bg-[#111827] border border-gray-800 rounded-xl p-6 mb-6">
         <h3 className="text-white font-semibold mb-4">Create Virtual Card</h3>
-        <form onSubmit={handleCreate} className="grid grid-cols-2 gap-4">
-          <input type="text" placeholder="e.g. DoorDash order, Amazon purchase" value={label} onChange={e => setLabel(e.target.value)} required className="bg-[#1a2235] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]" />
-          <input type="number" placeholder="Spending limit in USD (e.g. 25)" value={limit} onChange={e => setLimit(e.target.value)} min="1" max="50000" required className="bg-[#1a2235] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]" />
-          <div className="col-span-2 flex gap-3 items-center">
+        {warning && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-3 mb-4">
+            <p className="text-amber-400 text-sm">{warning}</p>
+          </div>
+        )}
+        <form onSubmit={handleCreate} className="grid grid-cols-3 gap-3">
+          <input type="text" placeholder="e.g. DoorDash order, Amazon purchase" value={label} onChange={e => setLabel(e.target.value)} required className="w-full bg-[#0a0f1e] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]" />
+          <input
+            type="text"
+            placeholder="Agent name (e.g. Scout, Claude, GPT-4)"
+            value={agent}
+            onChange={e => setAgent(e.target.value)}
+            className="w-full bg-[#0a0f1e] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]"
+          />
+          <input type="number" placeholder="Spending limit in USD (e.g. 25)" value={limit} onChange={e => setLimit(e.target.value)} min="1" max="50000" required className="w-full bg-[#0a0f1e] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#4ade80]" />
+          <div className="col-span-3 flex gap-3 items-center">
             <button type="submit" disabled={loading} className="bg-[#4ade80] text-black px-6 py-3 rounded-lg font-semibold hover:bg-[#22c55e] disabled:opacity-50">{loading ? "Creating..." : "Create Card"}</button>
             {error && <p className="text-red-400 text-sm">{error}</p>}
           </div>

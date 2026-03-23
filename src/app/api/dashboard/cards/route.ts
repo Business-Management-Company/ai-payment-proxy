@@ -42,9 +42,9 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!customer) return NextResponse.json({ error: "Customer not found" }, { status: 404 });
-    if ((customer.balance_usd || 0) < limitFloat) {
-      return NextResponse.json({ error: "Insufficient balance" }, { status: 402 });
-    }
+    const warning = (customer.balance_usd || 0) < limitFloat
+      ? "Balance is insufficient to fund this card. Add funds to activate it."
+      : undefined;
 
     const stripeCard = await stripe.issuing.cards.create({
       cardholder: customer.stripe_cardholder_id,
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       .update({ cards_used_this_month: (customer.cards_used_this_month || 0) + 1 })
       .eq("id", customer.id);
 
-    return NextResponse.json({ success: true, data: card });
+    return NextResponse.json({ success: true, warning, data: card });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
