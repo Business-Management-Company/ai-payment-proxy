@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import localFont from "next/font/local";
 import "./globals.css";
+import ChatWidget from "./components/ChatWidget";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -34,6 +35,7 @@ export default function RootLayout({
       >
         <Script src="https://js.stripe.com/v3/" strategy="beforeInteractive" />
         {children}
+        <ChatWidget />
       </body>
     </html>
   );

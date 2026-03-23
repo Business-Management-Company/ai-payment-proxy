@@ -46,8 +46,17 @@ export default function HomePage() {
         <div className="flex items-center gap-6">
           <a href="/docs"        className="text-gray-400 hover:text-white text-sm transition-colors">Docs</a>
           <a href="/pricing"     className="text-gray-400 hover:text-white text-sm transition-colors">Pricing</a>
-          <a href="/blog"        className="text-gray-400 hover:text-white text-sm transition-colors">Blog</a>
-          <a href="/integrations" className="text-gray-400 hover:text-white text-sm transition-colors">Integrations</a>
+          <div className="relative group">
+            <button type="button" className="text-gray-400 hover:text-white text-sm transition-colors flex items-center gap-1">
+              Resources <span className="text-xs">▼</span>
+            </button>
+            <div className="absolute top-full right-0 mt-2 w-48 bg-[#111827] border border-gray-800 rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all shadow-xl z-50">
+              <a href="/kb"           className="block px-4 py-3 text-gray-400 hover:text-white hover:bg-[#1a2235] text-sm transition-colors">📚 Help Center</a>
+              <a href="/blog"         className="block px-4 py-3 text-gray-400 hover:text-white hover:bg-[#1a2235] text-sm transition-colors">✍️ Blog</a>
+              <a href="/integrations" className="block px-4 py-3 text-gray-400 hover:text-white hover:bg-[#1a2235] text-sm transition-colors">🔌 Integrations</a>
+              <a href="/docs"         className="block px-4 py-3 text-gray-400 hover:text-white hover:bg-[#1a2235] text-sm transition-colors">📡 API Docs</a>
+            </div>
+          </div>
           <a href="/#use-cases" className="text-gray-400 hover:text-white text-sm transition-colors">Use Cases</a>
           <a href="/login"       className="text-gray-400 hover:text-white text-sm transition-colors">Sign In</a>
           <a href="/signup"      className="bg-[#4ade80] text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-[#22c55e] transition-colors">Get API Key</a>
