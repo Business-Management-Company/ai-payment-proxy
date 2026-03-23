@@ -83,6 +83,18 @@ export async function POST(request: NextRequest) {
       plan: plan,
     });
 
+    try {
+      const { sendWelcomeEmail } = await import("@/lib/emails");
+      await sendWelcomeEmail(
+        email,
+        name,
+        rawKey,
+        trialEnd || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+      );
+    } catch (emailError) {
+      console.error("Failed to send welcome email:", emailError);
+    }
+
     return NextResponse.json({
       apiKey: rawKey,
       prefix,
