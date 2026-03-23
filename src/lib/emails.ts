@@ -4,7 +4,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = "AI Payment Proxy <hello@aipaymentproxy.com>";
 
 export async function sendWelcomeEmail(email: string, name: string, apiKey: string, trialEndsAt: string) {
-  const firstName = name.split(" ")[0];
+  const firstName = (name.split(" ")[0] || "there").charAt(0).toUpperCase() + (name.split(" ")[0] || "there").slice(1).toLowerCase();
   const trialDate = new Date(trialEndsAt).toLocaleDateString("en-US", { month: "long", day: "numeric" });
 
   return resend.emails.send({
